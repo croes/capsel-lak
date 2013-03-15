@@ -33,7 +33,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 public class LocationCache {
 	
 	private Map<String, Location> locs;
-	private static final String cacheFile = "org_locs.txt";
+	private static final String cacheFile = "data/org_locs.txt";
 	private static final String GOOGLE_PLACES_API_KEY = "AIzaSyCkUxgtcX32ogBa2Odtf2L4IWsYAH81mfw";
 	
 	private static LocationCache instance = null;
