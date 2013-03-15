@@ -1,0 +1,17 @@
+.project
+.classpath
+.settings
+bin
+
+# Unfolding
+lib/core.jar
+lib/glgraphics.jar
+lib/gluegen-rt.jar
+lib/jogl.jar
+lib/json4processing.jar
+lib/libTUIO.jar
+lib/log4j-1.2.15.jar
+lib/opengl.jar
+lib/sqlitejdbc-v056.jar
+lib/unfolding.0.9.beta.jar
+libNative
