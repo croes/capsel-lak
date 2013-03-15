@@ -4,29 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import codeanticode.glgraphics.GLConstants;
+import marker.NamedMarker;
+import marker.OrgMarker;
+import processing.core.PApplet;
+import rdf.RDFModel;
+import util.Drawable;
+import util.LocationCache;
+import util.Time;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
 import controlP5.ControlP5;
 import controlP5.ListBox;
-
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
-
-import rdf.RDFModel;
-import processing.core.PApplet;
-import util.Drawable;
-import util.LocationCache;
-import util.Time;
-import marker.OrgMarker;
+import de.looksgood.ani.Ani;
 
 
 public class UniversityMap extends PApplet{
@@ -45,13 +45,19 @@ public class UniversityMap extends PApplet{
 	}
 	
 	public void setup(){
-		size(1040, 720, GLConstants.GLGRAPHICS);
+		size(1040, 720);//, GLConstants.GLGRAPHICS);
 		frameRate(30);
+		
+		smooth();
+		Ani.init(this);
+		
 		setupGUI();
 	    map = new UnfoldingMap(this, 0, 200, this.width, this.height-200);
-	    //map.setTweening(true); //doesn't work
+	    map.setTweening(true); //doesn't work
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
+	    
+	    addEdgeMarkers();
 	    
 		loadOrgMarkers();
 		//addEdgeMarkers();
@@ -85,14 +91,15 @@ public class UniversityMap extends PApplet{
 				"?org rdf:type foaf:Organization . \n" +
 				"?org foaf:name ?orgname . \n" +
 				"} \n");
-		//ResultSetFormatter.out(rs);
-		for(;rs.hasNext();){
+
+		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
 			String orgname = sol.getLiteral("orgname").toString();
 			Location loc = LocationCache.get(orgname);
 			if(loc != null){
-				OrgMarker om = new OrgMarker(orgname, loc, sol.get("org"), map);
-				map.addMarkers(om);
+				//OrgMarker m = new OrgMarker(orgname, loc, sol.get("org"), map);
+				Marker m = new NamedMarker(orgname, loc);
+				map.addMarkers(m);
 			}
 		}
 	}
@@ -202,20 +209,16 @@ public class UniversityMap extends PApplet{
 		for(Drawable d : drawables ){
 			d.update();
 		}
-			
+		
 		for(Drawable d : drawables){
 			d.draw(this);
 		}
 	}
 	
-	public void mousePressed(){
-		Marker hitMarker = map.getFirstHitMarker(mouseX, mouseY);
-		if(hitMarker != null){
-			hitMarker.setSelected(true);
-		}else{
-			for(Marker marker : map.getMarkers()){
-				marker.setSelected(false);
-			}
+	public void mouseMoved(){
+		List<Marker> hitMarkers = map.getHitMarker(mouseX, mouseY);
+		for (Marker m : map.getMarkers()) {
+			m.setSelected(hitMarkers.contains(m));
 		}
 	}
 }
