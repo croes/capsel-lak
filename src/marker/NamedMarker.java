@@ -30,6 +30,7 @@ public class NamedMarker extends SimplePointMarker {
 	private State state;
 	
 	private int countSelectedLines;
+	private boolean visible;
 
 	public NamedMarker(String title, Location location) {
 		this(title, location, true);
@@ -39,7 +40,7 @@ public class NamedMarker extends SimplePointMarker {
 		super(location);
 		this.str = title;
 		this.animated = animated;
-		
+		this.visible = true;
 		// make the marker black
 		color = highlightColor = highlightStrokeColor = strokeColor
 				= 0;
@@ -72,7 +73,7 @@ public class NamedMarker extends SimplePointMarker {
 	}
 	
 	public void callBack() {
-		System.out.println("Callback!");
+		//System.out.println("Callback!");
 		if (state == State.SHOWING) {
 			state = State.SHOWN;
 		} else {
@@ -81,6 +82,8 @@ public class NamedMarker extends SimplePointMarker {
 	}
 
 	public void draw(PGraphics pg, float x, float y) {
+		if(!visible)
+			return;
 		if (state == State.POINT) {
 			super.draw(pg, x, y);
 			return;
@@ -103,6 +106,10 @@ public class NamedMarker extends SimplePointMarker {
 		pg.text(str, x - pg.textWidth(str) / 2, y + 4);
 		
 		pg.popStyle();
+	}
+	
+	public String getName(){
+		return str;
 	}
 	
 	private float getArcStart() {
@@ -155,5 +162,9 @@ public class NamedMarker extends SimplePointMarker {
 		}
 		if (countSelectedLines == 0) setSelected(false);
 		
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 }
