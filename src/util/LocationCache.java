@@ -78,12 +78,6 @@ public class LocationCache {
 		}
 	}
 
-	private Location addLocation(String name) {
-		Location loc = lookup(name);
-		addLocation(name, loc);
-		return loc;
-	}
-
 	public void addLocation(String name, Location loc) {
 		name = name.trim();
 		if (!name.equals("")) {
