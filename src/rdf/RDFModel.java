@@ -1,15 +1,20 @@
 package rdf;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.util.FileManager;
 
 public class RDFModel {
@@ -89,5 +94,140 @@ public class RDFModel {
 		} finally { qexec.close() ; }
 		//resultsrw.reset();
 		return results;
+	}
+	
+	public static ResultSet getAllOrganisations(){
+		return RDFModel.query( 
+				"SELECT DISTINCT ?org ?orgname \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?org rdf:type foaf:Organization . \n" +
+				"?org foaf:name ?orgname . \n" +
+				"} \n");
+	}
+	
+	public static ResultSet getAllOrganisationPairsThatWroteAPaperTogether(){
+		return RDFModel.query(
+				"SELECT ?orgName ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?org rdf:type foaf:Organization .\n " +
+				"?org foaf:name ?orgName . \n" +
+				"?org foaf:member ?member . \n" +
+				"?paper dc:creator ?member .\n" +
+				"?paper dc:creator ?otherMember . \n" +
+				"?otherMember swrc:affiliation ?otherOrg . \n" +
+				"?otherOrg foaf:name ?otherOrgName . \n" +
+				"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
+				"} GROUP BY ?orgName ?otherOrgName\n"
+				);
+	}
+	
+	public static ResultSet getAllOrganisationPairsThatWroteAPaperTogetherFromGivenConference(String confAcronym){
+		return RDFModel.query(
+				"SELECT ?orgName ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?org rdf:type foaf:Organization .\n " +
+				"?org foaf:name ?orgName . \n" +
+				"?org foaf:member ?member . \n" +
+				"?paper dc:creator ?member .\n" +
+				"?paper dc:creator ?otherMember . \n" +
+				"?paper swc:isPartOf ?proc . \n" +
+				"?otherMember swrc:affiliation ?otherOrg . \n" +
+				"?otherOrg foaf:name ?otherOrgName . \n" +
+				"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
+				"} GROUP BY ?orgName ?otherOrgName\n"
+				);
+	}
+	
+	/**
+	 * Returns all the organizations that took part in the given conference.
+	 * @param confAcronym
+	 * @return
+	 */
+	public static List<RDFNode> getOrganisationsOfConference(String confAcronym){
+		ResultSet rs = RDFModel.query( 
+				"SELECT * \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?conf rdf:type swc:ConferenceEvent .\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?proc swc:hasPart ?paper. \n" +
+				"?paper dc:creator ?author . \n" +
+				"?author swrc:affiliation ?org . \n" +
+				"} \n");
+		//ResultSetFormatter.out(rs);
+		QuerySolution sol = null;
+		List<RDFNode> answers = new ArrayList<RDFNode>();
+		while(rs.hasNext()){
+			sol = rs.next();
+			answers.add(sol.get("org"));
+		}
+		return answers;
+	}
+	
+	/**
+	 * Returns all the available conferences.
+	 * @return
+	 */
+	public static List<RDFNode> getConferences(){
+		ResultSet rs = RDFModel.query( 
+				"SELECT DISTINCT ?conf \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?conf rdf:type swc:ConferenceEvent \n" +
+				"} \n");
+		//ResultSetFormatter.out(rs);
+		QuerySolution sol = null;
+		List<RDFNode> answers = new ArrayList<RDFNode>();
+		while(rs.hasNext()){
+			sol = rs.next();
+			answers.add(sol.get("conf"));
+		}
+		return answers;
+	}
+	
+	public static int getPaperCount(String text){
+		int paperCount = 0;
+		ResultSet rs = RDFModel.query(
+				"SELECT ?org (COUNT(?paper) AS ?paperCount)\n" +
+				"WHERE \n" +
+				"{\n" +
+				"?org rdf:type foaf:Organization .\n " +
+				"?org foaf:name \"" + text + "\" . \n" +
+				"?org foaf:member ?member . \n" +
+				"?paper foaf:maker ?member\n" +
+				"} GROUP BY ?org \n"
+				);
+		//ResultSetFormatter.out(rs);
+		//System.out.println("====================");
+		QuerySolution sol;
+		while(rs.hasNext()){
+			sol = rs.next();
+			paperCount = sol.getLiteral("paperCount").getInt();
+			System.out.printf("Paper count for %s:%d\n",text, sol.getLiteral("paperCount").getInt());
+		}
+		return paperCount;
+	}
+	
+	public static ResultSet getCommonPaperCount(String text){
+		return RDFModel.query(
+			"SELECT ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
+			"WHERE \n" +
+			"{\n" +
+			"?org rdf:type foaf:Organization .\n " +
+			"?org foaf:name \"" + text + "\" . \n" +
+			"?org foaf:member ?member . \n" +
+			"?paper dc:creator ?member .\n" +
+			"?paper dc:creator ?otherMember . \n" +
+			"?otherMember swrc:affiliation ?otherOrg . \n" +
+			"?otherOrg foaf:name ?otherOrgName . \n" +
+			"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
+			"} GROUP BY ?otherOrgName\n"
+			);
 	}
 }

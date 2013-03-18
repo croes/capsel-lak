@@ -121,24 +121,7 @@ public class OrgMarker extends AbstractMarker {
 			//System.out.println("===================");
 		
 			//System.out.println("====================");
-			ResultSet rs = RDFModel.query(
-					"SELECT ?org (COUNT(?paper) AS ?paperCount)\n" +
-					"WHERE \n" +
-					"{\n" +
-					"?org rdf:type foaf:Organization .\n " +
-					"?org foaf:name \"" + text + "\" . \n" +
-					"?org foaf:member ?member . \n" +
-					"?paper foaf:maker ?member\n" +
-					"} GROUP BY ?org \n"
-					);
-			//ResultSetFormatter.out(rs);
-			//System.out.println("====================");
-			QuerySolution sol;
-			while(rs.hasNext()){
-				sol = rs.next();
-				paperCount = sol.getLiteral("paperCount").getInt();
-				System.out.printf("Paper count for %s:%d\n",text, sol.getLiteral("paperCount").getInt());
-			}
+			paperCount = RDFModel.getPaperCount(text);
 			rmin = 5;
 			r = (float) (rmin + 5f*Math.sqrt(paperCount));
 			text += ": " + paperCount;
@@ -161,20 +144,7 @@ public class OrgMarker extends AbstractMarker {
 		@Override
 		public void setup() {
 			edges = new ArrayList<Marker>();
-			ResultSet rs = RDFModel.query(
-					"SELECT ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
-					"WHERE \n" +
-					"{\n" +
-					"?org rdf:type foaf:Organization .\n " +
-					"?org foaf:name \"" + text + "\" . \n" +
-					"?org foaf:member ?member . \n" +
-					"?paper dc:creator ?member .\n" +
-					"?paper dc:creator ?otherMember . \n" +
-					"?otherMember swrc:affiliation ?otherOrg . \n" +
-					"?otherOrg foaf:name ?otherOrgName . \n" +
-					"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
-					"} GROUP BY ?otherOrgName\n"
-					);
+			ResultSet rs = RDFModel.getCommonPaperCount(text);
 			ResultSetFormatter.out(rs);
 			QuerySolution sol;
 			while(rs.hasNext()){

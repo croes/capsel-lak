@@ -49,6 +49,7 @@ public class NamedMarker extends SimplePointMarker {
 	}
 	
 	public void setSelected(boolean selected) {
+		//If the selection stays the same, only call the super method.
 		if (selected == isSelected()) {
 			super.setSelected(selected);
 			return;
