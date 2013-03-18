@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import marker.HideableLineMarker;
+import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
@@ -25,21 +25,26 @@ import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
+import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
 
 
 public class UniversityMap extends PApplet{
-
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = -7231594744155656041L;
+	
+	public static class HideableLineMarker extends HideableMarker<SimpleLinesMarker> {
+		
+		public HideableLineMarker(Location start, Location end) {
+			super(new SimpleLinesMarker(start, end));
+		}
+	}
 	
 	private UnfoldingMap map;
 	private List<Drawable> drawables = new CopyOnWriteArrayList<Drawable>();
 	private ListBox conflist;
-	private MarkerManager<Marker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
+	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<Marker> edgeMarkMan;
 	
 	public static void main(String[] args) {
@@ -54,7 +59,7 @@ public class UniversityMap extends PApplet{
 		Ani.init(this);
 		
 		setupGUI();
-	    map = new UnfoldingMap(this, 0, 200, this.width, this.height-200);
+	    map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
 	    map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
@@ -62,7 +67,7 @@ public class UniversityMap extends PApplet{
 	    
 	    edgeMarkMan = new MarkerManager<Marker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
 	    addAllEdgeMarkers();
-	    orgMarkMan = new MarkerManager<Marker>();
+	    orgMarkMan = new MarkerManager<NamedMarker>();
 		addAllOrgMarkers();
 		
 		map.addMarkerManager(edgeMarkMan);
@@ -128,9 +133,8 @@ public class UniversityMap extends PApplet{
 	}
 	
 	private void hideAllOrgMarkers() {
-		for(Marker m : orgMarkMan.getMarkers()){
-			NamedMarker nm = (NamedMarker)m;
-			nm.setVisible(false);
+		for(NamedMarker m : orgMarkMan.getMarkers()){
+			m.setHidden(true);
 		}
 	}
 
@@ -138,10 +142,9 @@ public class UniversityMap extends PApplet{
 		for(RDFNode node : getOrganisationsOfConference(confAcronym)){
 			String orgName = node.asResource().getProperty(FOAF.name).getString();
 			//System.out.println(orgName);
-			for(Marker m : orgMarkMan.getMarkers()){
-				NamedMarker nm = (NamedMarker)m;
-				if(nm.getName().equals(orgName))
-					nm.setVisible(true);
+			for(NamedMarker m : orgMarkMan.getMarkers()){
+				if(m.getName().equals(orgName))
+					m.setHidden(false);
 			}
 		}
 	}
@@ -245,7 +248,7 @@ public class UniversityMap extends PApplet{
 	}
 	
 	public void mouseMoved(){
-		List<Marker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
+		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
