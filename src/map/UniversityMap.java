@@ -1,6 +1,5 @@
 package map;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -72,14 +71,20 @@ public class UniversityMap extends PApplet{
 		drawables.add(Time.getInstance());
 	}
 
+	/**
+	 * Populate the extra GUI elements with the needed data.
+	 */
 	private void populateGUI() {
-		List<RDFNode> confs = getConferences();
+		List<RDFNode> confs = RDFModel.getConferences();
 		for(int i = 0; i < confs.size(); i++){
 			String acronym = confs.get(i).asResource().getProperty(RDFModel.getModel().getProperty("http://data.semanticweb.org/ns/swc/ontology#hasAcronym")).getString();
 			conflist.addItem(acronym, i);
 		}
 	}
 
+	/**
+	 * Add all the extra GUI elements (apart from the map) to the PApplet.
+	 */
 	private void setupGUI(){
 		ControlP5 cp5 = new ControlP5(this);
 		conflist = cp5.addListBox("Conferences")
@@ -87,6 +92,7 @@ public class UniversityMap extends PApplet{
 						.setSize(120, 120)
 						.setBarHeight(15)
 						.setItemHeight(15);
+		//Listener to control selection events.
 		cp5.addListener(new ControlListener(){
 			@Override
 			public void controlEvent(ControlEvent e) {
@@ -99,6 +105,11 @@ public class UniversityMap extends PApplet{
 		});
 	}
 
+	/**
+	 * Shows only the markers from the given conference name on the map.
+	 *  
+	 * @param confAcronym
+	 */
 	private void showOnlyConf(String confAcronym) {
 		hideAllOrgMarkers();
 		showOrgMarkersOf(confAcronym);
@@ -106,14 +117,11 @@ public class UniversityMap extends PApplet{
 		addEdgeMarkers(confAcronym);
 	}
 
+	/**
+	 * Adds all the organization markers to the map.
+	 */
 	private void addAllOrgMarkers() {
-		ResultSet rs = RDFModel.query( 
-				"SELECT DISTINCT ?org ?orgname \n" +
-				"WHERE \n" +
-				"{ \n" +
-				"?org rdf:type foaf:Organization . \n" +
-				"?org foaf:name ?orgname . \n" +
-				"} \n");
+		ResultSet rs = RDFModel.getAllOrganisations();
 
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
@@ -127,6 +135,9 @@ public class UniversityMap extends PApplet{
 		}
 	}
 	
+	/**
+	 * Hides all the organizations markers from the map.
+	 */
 	private void hideAllOrgMarkers() {
 		for(Marker m : orgMarkMan.getMarkers()){
 			NamedMarker nm = (NamedMarker)m;
@@ -134,8 +145,12 @@ public class UniversityMap extends PApplet{
 		}
 	}
 
+	/**
+	 * Shows only the organisation markers of the given organisation name on the map.
+	 * @param confAcronym
+	 */
 	private void showOrgMarkersOf(String confAcronym) {
-		for(RDFNode node : getOrganisationsOfConference(confAcronym)){
+		for(RDFNode node : RDFModel.getOrganisationsOfConference(confAcronym)){
 			String orgName = node.asResource().getProperty(FOAF.name).getString();
 			//System.out.println(orgName);
 			for(Marker m : orgMarkMan.getMarkers()){
@@ -146,28 +161,16 @@ public class UniversityMap extends PApplet{
 		}
 	}
 
+	/**
+	 * Adds all the line markers between the org markers.
+	 */
 	private void addAllEdgeMarkers(){
-		ResultSet rs = RDFModel.query(
-				"SELECT ?orgName ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
-				"WHERE \n" +
-				"{\n" +
-				"?org rdf:type foaf:Organization .\n " +
-				"?org foaf:name ?orgName . \n" +
-				"?org foaf:member ?member . \n" +
-				"?paper dc:creator ?member .\n" +
-				"?paper dc:creator ?otherMember . \n" +
-				"?otherMember swrc:affiliation ?otherOrg . \n" +
-				"?otherOrg foaf:name ?otherOrgName . \n" +
-				"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
-				"} GROUP BY ?orgName ?otherOrgName\n"
-				);
+		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogether();
 		//ResultSetFormatter.out(rs);
 		QuerySolution sol;
 		while(rs.hasNext()){
 			sol = rs.next();
-			if(sol.getLiteral("orgName") == null)
-				continue;
-			if(sol.getLiteral("otherOrgName") == null)
+			if(!isValidSolutionForMarker(sol))
 				continue;
 			String orgName = sol.getLiteral("orgName").getString();
 			String otherOrgName = sol.getLiteral("otherOrgName").getString();
@@ -184,31 +187,28 @@ public class UniversityMap extends PApplet{
 		}
 	}
 	
+	/**
+	 * Tests whether the given querySolution can be used to create a valid marker.
+	 * @param solution
+	 * @return
+	 */
+	private boolean isValidSolutionForMarker(QuerySolution solution){
+		if(solution.getLiteral("orgName") == null || solution.getLiteral("otherOrgName") == null)
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Adds all the edge markers of the given conference name to the map.
+	 * @param confAcronym
+	 */
 	private void addEdgeMarkers(String confAcronym){
-		ResultSet rs = RDFModel.query(
-				"SELECT ?orgName ?otherOrgName (COUNT(?otherMember) as ?coopCount) \n" +
-				"WHERE \n" +
-				"{\n" +
-				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
-				"?conf swc:hasRelatedDocument ?proc . \n" +
-				"?org rdf:type foaf:Organization .\n " +
-				"?org foaf:name ?orgName . \n" +
-				"?org foaf:member ?member . \n" +
-				"?paper dc:creator ?member .\n" +
-				"?paper dc:creator ?otherMember . \n" +
-				"?paper swc:isPartOf ?proc . \n" +
-				"?otherMember swrc:affiliation ?otherOrg . \n" +
-				"?otherOrg foaf:name ?otherOrgName . \n" +
-				"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
-				"} GROUP BY ?orgName ?otherOrgName\n"
-				);
+		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogetherFromGivenConference(confAcronym);
 		//ResultSetFormatter.out(rs);
 		QuerySolution sol;
 		while(rs.hasNext()){
 			sol = rs.next();
-			if(sol.getLiteral("orgName") == null)
-				continue;
-			if(sol.getLiteral("otherOrgName") == null)
+			if(!isValidSolutionForMarker(sol))
 				continue;
 			String orgName = sol.getLiteral("orgName").getString();
 			String otherOrgName = sol.getLiteral("otherOrgName").getString();
@@ -225,6 +225,7 @@ public class UniversityMap extends PApplet{
 		}
 	}
 	
+	@Override
 	public void draw(){
 		updateDrawables();
 		background(245);
@@ -244,49 +245,14 @@ public class UniversityMap extends PApplet{
 		}
 	}
 	
+	/**
+	 * Takes care of the hovering feature. 
+	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
+	 */
 	public void mouseMoved(){
 		List<Marker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
-	}
-
-	private List<RDFNode> getOrganisationsOfConference(String confAcronym){
-		ResultSet rs = RDFModel.query( 
-				"SELECT * \n" +
-				"WHERE \n" +
-				"{ \n" +
-				"?conf rdf:type swc:ConferenceEvent .\n" +
-				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
-				"?conf swc:hasRelatedDocument ?proc . \n" +
-				"?proc swc:hasPart ?paper. \n" +
-				"?paper dc:creator ?author . \n" +
-				"?author swrc:affiliation ?org . \n" +
-				"} \n");
-		//ResultSetFormatter.out(rs);
-		QuerySolution sol = null;
-		List<RDFNode> answers = new ArrayList<RDFNode>();
-		while(rs.hasNext()){
-			sol = rs.next();
-			answers.add(sol.get("org"));
-		}
-		return answers;
-	}
-
-	private List<RDFNode> getConferences(){
-		ResultSet rs = RDFModel.query( 
-				"SELECT DISTINCT ?conf \n" +
-				"WHERE \n" +
-				"{ \n" +
-				"?conf rdf:type swc:ConferenceEvent \n" +
-				"} \n");
-		//ResultSetFormatter.out(rs);
-		QuerySolution sol = null;
-		List<RDFNode> answers = new ArrayList<RDFNode>();
-		while(rs.hasNext()){
-			sol = rs.next();
-			answers.add(sol.get("conf"));
-		}
-		return answers;
 	}
 }
