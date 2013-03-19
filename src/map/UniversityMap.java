@@ -58,12 +58,11 @@ public class UniversityMap extends PApplet{
 		smooth();
 		Ani.init(this);
 		
-		setupGUI();
+		
 	    map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
 	    map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
-	    
 	    
 	    edgeMarkMan = new MarkerManager<SimpleLinesMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
 	    addAllEdgeMarkers();
@@ -73,6 +72,7 @@ public class UniversityMap extends PApplet{
 		map.addMarkerManager(edgeMarkMan);
 		map.addMarkerManager(orgMarkMan);
 		
+		setupGUI();
 		populateGUI();
 		drawables.add(Time.getInstance());
 	}
@@ -213,7 +213,7 @@ public class UniversityMap extends PApplet{
 			if(start == null || end == null)
 				continue;
 			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
-			m.setStrokeColor(0xF000FF00);
+			m.setStrokeColor(0x0100FF00);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
 			//System.out.printf("Common papers for %s to %s:%d\n", orgName, otherOrgName, coopCount);
