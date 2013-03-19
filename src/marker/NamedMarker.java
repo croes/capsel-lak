@@ -1,6 +1,7 @@
 package marker;
 
 import javax.vecmath.Color4f;
+import javax.vecmath.Point2f;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
@@ -96,10 +97,10 @@ public class NamedMarker extends SimplePointMarker {
 		pg.strokeCap(PGraphics.SQUARE);
 		pg.noFill();
 		
-		float r = getRadius();
+		float radius = getRadius();
 		float phiStart = getArcStart(), phiEnd = getArcEnd();
-		pg.arc(x, y, r, r, -phiEnd, -phiStart);
-		pg.arc(x, y, r, r, phiStart, phiEnd);
+		pg.arc(x, y, radius, radius, -phiEnd, -phiStart);
+		pg.arc(x, y, radius, radius, phiStart, phiEnd);
 		
 		pg.fill(0, 0, 0, getTextAlpha() * 255);
 		pg.text(str, x - pg.textWidth(str) / 2, y + 4);
@@ -120,7 +121,7 @@ public class NamedMarker extends SimplePointMarker {
 	}
 	
 	private float getStrokeWeight() {
-		return radius + (radius - 12f) * _getStep1();
+		return radius + (12f - radius) * _getStep1();
 	}
 	
 	private float getRadius() {
@@ -161,5 +162,14 @@ public class NamedMarker extends SimplePointMarker {
 		}
 		if (countSelectedLines == 0) setSelected(false);
 		
+	}
+
+	@Override
+	public boolean isInside(float checkX, float checkY, float x, float y) {
+		if (state == State.POINT)
+			return super.isInside(checkX, checkY, x, y);
+		
+		Point2f pos = new Point2f(x, y);
+		return pos.distance(new Point2f(checkX, checkY)) < PApplet.abs(getRadius() - getStrokeWeight());
 	}
 }
