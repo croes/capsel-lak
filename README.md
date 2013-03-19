@@ -16,3 +16,4 @@
 - Verschillende kleuren voor edges/nodes?
 - Generics van map.addMarkerManager vragen aan Till 
 - Meer filtering-opties
+- UniversityMap combineren met CountryMap
