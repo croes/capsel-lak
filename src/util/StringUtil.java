@@ -3,6 +3,9 @@ package util;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Statement;
+
 public class StringUtil {
 
 	private static final Map<String, String> duplicates;
@@ -28,6 +31,14 @@ public class StringUtil {
 			return "";
 
 		return duplicates.containsKey(s) ? duplicates.get(s) : s;
+	}
+	
+	public static String getString(Literal l) {
+		return getString(l == null ? "" : l.getString());
+	}
+	
+	public static String getString(Statement s) {
+		return getString(s == null ? "" : s.getString());
 	}
 
 	private StringUtil() {

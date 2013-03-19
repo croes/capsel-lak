@@ -9,6 +9,7 @@ import processing.core.PApplet;
 import rdf.RDFModel;
 import util.Drawable;
 import util.LocationCache;
+import util.StringUtil;
 import util.Time;
 
 import com.hp.hpl.jena.query.QuerySolution;
@@ -82,7 +83,11 @@ public class UniversityMap extends PApplet{
 	private void populateGUI() {
 		List<RDFNode> confs = RDFModel.getConferences();
 		for(int i = 0; i < confs.size(); i++){
-			String acronym = confs.get(i).asResource().getProperty(RDFModel.getModel().getProperty("http://data.semanticweb.org/ns/swc/ontology#hasAcronym")).getString();
+			String acronym = StringUtil.getString(confs.get(i).asResource()
+					.getProperty(
+							RDFModel.getModel()
+								.getProperty("http://data.semanticweb.org/ns/swc/ontology#hasAcronym")
+					));
 			conflist.addItem(acronym, i);
 		}
 	}
@@ -180,7 +185,7 @@ public class UniversityMap extends PApplet{
 	 */
 	private void showOrgMarkersOf(String confAcronym) {
 		for(RDFNode node : RDFModel.getOrganisationsOfConference(confAcronym)){
-			String orgName = node.asResource().getProperty(FOAF.name).getString();
+			String orgName = StringUtil.getString(node.asResource().getProperty(FOAF.name));
 			//System.out.println(orgName);
 			for(NamedMarker m : orgMarkMan.getMarkers()){
 				if(m.getName().equals(orgName))
@@ -200,8 +205,8 @@ public class UniversityMap extends PApplet{
 			sol = rs.next();
 			if(!isValidSolutionForMarker(sol))
 				continue;
-			String orgName = sol.getLiteral("orgName").getString();
-			String otherOrgName = sol.getLiteral("otherOrgName").getString();
+			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
+			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
 			Location start = LocationCache.get(orgName);
 			Location end = LocationCache.get(otherOrgName);
@@ -238,8 +243,8 @@ public class UniversityMap extends PApplet{
 			sol = rs.next();
 			if(!isValidSolutionForMarker(sol))
 				continue;
-			String orgName = sol.getLiteral("orgName").getString();
-			String otherOrgName = sol.getLiteral("otherOrgName").getString();
+			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
+			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
 			Location start = LocationCache.get(orgName);
 			Location end = LocationCache.get(otherOrgName);
