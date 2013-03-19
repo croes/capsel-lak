@@ -191,3 +191,4 @@ latitude,longitude,name,desc,color
 38.9020882;-77.0420609;Educational Testing Service;-;
 33.6265221;130.4247589;Kyushu University;-;
 43.5235405;-80.2272491;University of Guelph;-;
+30.0421;31.236;Cairo Microsoft Innovation Lab;-;
