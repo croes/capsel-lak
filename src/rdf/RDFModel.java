@@ -78,7 +78,8 @@ public class RDFModel {
 				"PREFIX led: <http://data.linkededucation.org/ns/linked-education.rdf#>\n" +
 				"PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
 				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
-				"PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" ;
+				"PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
+				"PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\n" ;
 		//String encodedString = "http://data.linkededucation.org/openrdf-sesame/repositories/lak-conference?query=" + URLEncoder.encode(queryString);
 		//System.out.println(encodedString);
 		queryString = prefix + queryString;
@@ -230,4 +231,75 @@ public class RDFModel {
 			"} GROUP BY ?otherOrgName\n"
 			);
 	}
+	
+	public static ResultSet getAllCountries(){
+		return RDFModel.query( 
+				"SELECT DISTINCT ?country \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?person rdf:type foaf:Person . \n" +
+				"?person foaf:based_near ?country . \n" +
+				"} \n");
+	}
+
+	/**
+	 * Returns all the countries that took part in the given conference.
+	 * @param confAcronym
+	 * @return
+	 */
+	public static List<String> getCountriesOfConference(String confAcronym){
+		ResultSet rs = RDFModel.query( 
+				"SELECT * \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?conf rdf:type swc:ConferenceEvent .\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?proc swc:hasPart ?paper. \n" +
+				"?paper dc:creator ?author . \n" +
+				"?author foaf:based_near ?country . \n" +
+				"} \n");
+		//ResultSetFormatter.out(rs);
+		QuerySolution sol = null;
+		List<String> answers = new ArrayList<String>();
+		while(rs.hasNext()){
+			sol = rs.next();
+			answers.add(sol.getResource("country").toString());
+		}
+		return answers;
+	}
+	
+	public static ResultSet getAllCountryPairsThatWroteAPaperTogether(){
+		return RDFModel.query(
+				"SELECT ?country ?otherCountry (COUNT(?otherPerson) as ?coopCount) \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?person rdf:type foaf:Person .\n " +
+				"?person foaf:based_near ?country . \n" +
+				"?person foaf:made ?paper . \n" +
+				"?paper dc:creator ?otherPerson . \n" +
+				"?otherPerson foaf:based_near ?otherCountry . \n" +
+				"FILTER (?otherPerson != ?person && ?otherCountry != ?country)" +
+				"} GROUP BY ?country ?otherCountry\n"
+				);
+	}
+	
+	public static ResultSet getAllCountryPairsThatWroteAPaperTogetherFromGivenConference(String confAcronym){
+		return RDFModel.query(
+				"SELECT ?country ?otherCountry (COUNT(?otherPerson) as ?coopCount) \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?person rdf:type foaf:Person .\n " +
+				"?person foaf:based_near ?country . \n" +
+				"?person foaf:made ?paper . \n" +
+				"?paper dc:creator ?otherPerson . \n" +
+				"?paper swc:isPartOf ?proc . \n" +
+				"?otherPerson foaf:based_near ?otherCountry . \n" +
+				"FILTER (?otherPerson != ?person && ?otherCountry != ?country)" +
+				"} GROUP BY ?country ?otherCountry \n"
+				);
+	}
+	
 }
