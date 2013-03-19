@@ -46,7 +46,6 @@ public class UniversityMap extends PApplet{
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
-	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.UniversityMap" });
 	}
@@ -102,6 +101,12 @@ public class UniversityMap extends PApplet{
 						.setSize(120, 120)
 						.setBarHeight(15)
 						.setItemHeight(15);
+		
+		cp5.addButton("ShowAllButton")
+				 .setCaptionLabel("Show all")
+			     .setValue(0)
+			     .setPosition(200,35)
+			     .setSize(120,19);
 		//Listener to control selection events.
 		cp5.addListener(new ControlListener(){
 			@Override
@@ -111,21 +116,17 @@ public class UniversityMap extends PApplet{
 					String acro = conflist.getItem(idx).getName();
 					showOnlyConf(acro);
 				}
+				if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
+					showAll();
+				}
 			}
 		});
-		
-		 cp5.addButton("showAllButton")
-		 .setCaptionLabel("Show all")
-	     .setValue(0)
-	     .setPosition(200,35)
-	     .setSize(120,19)
-	     ;
 	}
 	
 	/**
 	 * Called when showAll button is clicked
 	 */
-	private void showAllButton(){
+	private void showAll(){
 		showAllOrgMarkers();
 		edgeMarkMan.clearMarkers();
 		addAllEdgeMarkers();
