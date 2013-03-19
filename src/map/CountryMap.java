@@ -1,7 +1,6 @@
 package map;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import marker.HideableMarker;
 import marker.NamedMarker;
