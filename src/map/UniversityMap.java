@@ -152,7 +152,7 @@ public class UniversityMap extends PApplet{
 
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
-			String orgname = sol.getLiteral("orgname").toString();
+			String orgname = StringUtil.getString(sol.getLiteral("orgname"));
 			Location loc = LocationCache.get(orgname);
 			if(loc != null){
 				//OrgMarker m = new OrgMarker(orgname, loc, sol.get("org"), map);
