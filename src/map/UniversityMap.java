@@ -1,16 +1,13 @@
 package map;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
-import util.Drawable;
 import util.LocationCache;
 import util.StringUtil;
-import util.Time;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
@@ -42,7 +39,6 @@ public class UniversityMap extends PApplet{
 	}
 	
 	private UnfoldingMap map;
-	private List<Drawable> drawables = new CopyOnWriteArrayList<Drawable>();
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
@@ -56,7 +52,6 @@ public class UniversityMap extends PApplet{
 		
 		smooth();
 		Ani.init(this);
-		
 		
 	    map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
 	    map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
@@ -73,7 +68,6 @@ public class UniversityMap extends PApplet{
 		
 		setupGUI();
 		populateGUI();
-		drawables.add(Time.getInstance());
 	}
 
 	/**
@@ -152,10 +146,9 @@ public class UniversityMap extends PApplet{
 
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
-			String orgname = sol.getLiteral("orgname").toString();
+			String orgname = StringUtil.getString(sol.getLiteral("orgname"));
 			Location loc = LocationCache.get(orgname);
 			if(loc != null){
-				//OrgMarker m = new OrgMarker(orgname, loc, sol.get("org"), map);
 				NamedMarker m = new NamedMarker(orgname, loc);
 				orgMarkMan.addMarker(m);
 			}
@@ -187,7 +180,7 @@ public class UniversityMap extends PApplet{
 	private void showOrgMarkersOf(String confAcronym) {
 		for(RDFNode node : RDFModel.getOrganisationsOfConference(confAcronym)){
 			String orgName = StringUtil.getString(node.asResource().getProperty(FOAF.name));
-			//System.out.println(orgName);
+
 			for(NamedMarker m : orgMarkMan.getMarkers()){
 				if(m.getName().equals(orgName))
 					m.setHidden(false);
@@ -200,7 +193,7 @@ public class UniversityMap extends PApplet{
 	 */
 	private void addAllEdgeMarkers(){
 		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogether();
-		//ResultSetFormatter.out(rs);
+
 		QuerySolution sol;
 		while(rs.hasNext()){
 			sol = rs.next();
@@ -261,22 +254,8 @@ public class UniversityMap extends PApplet{
 	
 	@Override
 	public void draw(){
-		updateDrawables();
 		background(245);
 		map.draw();
-		drawDrawables();
-	}
-
-	private void updateDrawables() {
-		for(Drawable d : drawables ){
-			d.update();
-		}
-	}
-
-	private void drawDrawables() {
-		for(Drawable d : drawables){
-			d.draw(this);
-		}
 	}
 	
 	/**
