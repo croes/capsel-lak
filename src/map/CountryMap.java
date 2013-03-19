@@ -8,8 +8,6 @@ import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
 import util.CountryLocationCache;
-import util.Drawable;
-import util.Time;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
@@ -40,7 +38,6 @@ public class CountryMap extends PApplet{
 	}
 
 	private UnfoldingMap map;
-	private List<Drawable> drawables = new CopyOnWriteArrayList<Drawable>();
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> countryMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
@@ -72,7 +69,6 @@ public class CountryMap extends PApplet{
 
 		setupGUI();
 		populateGUI();
-		drawables.add(Time.getInstance());
 	}
 
 	/**
@@ -262,22 +258,8 @@ public class CountryMap extends PApplet{
 
 	@Override
 	public void draw(){
-		updateDrawables();
 		background(245);
 		map.draw();
-		drawDrawables();
-	}
-
-	private void updateDrawables() {
-		for(Drawable d : drawables ){
-			d.update();
-		}
-	}
-
-	private void drawDrawables() {
-		for(Drawable d : drawables){
-			d.draw(this);
-		}
 	}
 
 	/**
