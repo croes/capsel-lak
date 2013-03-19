@@ -44,7 +44,7 @@ public class UniversityMap extends PApplet{
 	private List<Drawable> drawables = new CopyOnWriteArrayList<Drawable>();
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
-	private MarkerManager<Marker> edgeMarkMan;
+	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
 	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.UniversityMap" });
@@ -64,7 +64,7 @@ public class UniversityMap extends PApplet{
 	    MapUtils.createDefaultEventDispatcher(this, map);
 	    
 	    
-	    edgeMarkMan = new MarkerManager<Marker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
+	    edgeMarkMan = new MarkerManager<SimpleLinesMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
 	    addAllEdgeMarkers();
 	    orgMarkMan = new MarkerManager<NamedMarker>();
 		addAllOrgMarkers();
@@ -108,8 +108,24 @@ public class UniversityMap extends PApplet{
 				}
 			}
 		});
+		
+		 cp5.addButton("showAllButton")
+		 .setCaptionLabel("Show all")
+	     .setValue(0)
+	     .setPosition(200,35)
+	     .setSize(120,19)
+	     ;
 	}
-
+	
+	/**
+	 * Called when showAll button is clicked
+	 */
+	private void showAllButton(){
+		showAllOrgMarkers();
+		edgeMarkMan.clearMarkers();
+		addAllEdgeMarkers();
+	}
+	
 	/**
 	 * Shows only the markers from the given conference name on the map.
 	 *  
@@ -148,6 +164,15 @@ public class UniversityMap extends PApplet{
 			m.setHidden(true);
 		}
 	}
+	
+	/**
+	 * Shows all the organizations markers from the map.
+	 */
+	private void showAllOrgMarkers() {
+		for(NamedMarker m : orgMarkMan.getMarkers()){
+			m.setHidden(false);
+		}
+	}
 
 	/**
 	 * Shows only the organisation markers of the given organisation name on the map.
@@ -182,7 +207,7 @@ public class UniversityMap extends PApplet{
 			Location end = LocationCache.get(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			HideableLineMarker m = new HideableLineMarker(start, end);
+			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
 			m.setStrokeColor(0xF000FF00);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
@@ -220,7 +245,7 @@ public class UniversityMap extends PApplet{
 			Location end = LocationCache.get(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			HideableLineMarker m = new HideableLineMarker(start, end);
+			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
 			m.setStrokeColor(0xF000FF00);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
