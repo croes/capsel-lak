@@ -69,9 +69,10 @@ public class CountryMap extends PApplet{
 		addAllCountryMarkers();
 		edgeMarkMan = new MarkerManager<EdgeMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
 		addAllEdgeMarkers();
-
-		map.addMarkerManager(countryMarkMan);
+		
 		map.addMarkerManager(edgeMarkMan);
+		map.addMarkerManager(countryMarkMan);
+		
 
 		setupGUI();
 		populateGUI();

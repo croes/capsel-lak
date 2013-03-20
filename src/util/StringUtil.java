@@ -27,6 +27,8 @@ public class StringUtil {
 		
 		// countries
 		duplicates.put("New_Zeland", "New_Zealand");
+		
+		duplicates.put("UK", "United Kingdom");
 	}
 
 	public static String getString(String s) {

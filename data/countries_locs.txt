@@ -41,3 +41,4 @@ latitude,longitude,name,desc,color52.5167007;13.3999996;Germany;-;
 53.3333015;-6.2500000;Ireland;-;
 52.5167007;13.3999996;Germany;-;
 -42.0000000;174.0000000;New_Zealand;-;
+51.5000000;-0.1166670;United Kingdom;-;
