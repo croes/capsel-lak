@@ -19,3 +19,10 @@
 - Kleuren aanpassen en over nadenken
 - Countrymap samenbrengen met UniversityMap (met animatie)
 - Readability van markers (bvb met rechthoek waarin geschreven wordt.)
+
+
+## TODO tegen volgende week
+- Presentatie van 10-15 minuten, focus op wat er uit u brainstorm is gekomen
+wat is de onderzoeksvraag die je wilt oplossen, welke opties die je overwogen hebt, wat waren de voor en nadelen?
+dan een Demo, welke verhalen hebt ge al uit u visualisatie gehaald, wat hebt ge geleerd uit da proces, hoe dat ge samenwerkt, hoe wordt het werk verdeeld,
+ook technische problemen moogt ge vertellen, hoe wil je die visualisatie evalueren (gewoon op de conferentie staan, maar wat gaat ge die mensen dan vragen?)
