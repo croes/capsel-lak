@@ -11,6 +11,9 @@
 
 ## TODO
 
-- show/hide edges?
 - Verschillende kleuren voor edges/nodes?
-- Meer filtering-opties
+- Meer filtering-opties (conferentie scheiden van jaar bvb)
+- Country locations veranderen naar hoofdstad, halen van de google maps api
+- Kleuren aanpassen en over nadenken
+- Countrymap samenbrengen met UniversityMap (met animatie)
+- Readability van markers (bvb met rechthoek waarin geschreven wordt.)
