@@ -6,7 +6,8 @@ import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
-import util.LocationCache;
+import util.location.LocationCache;
+import util.location.OrganizationLocationCache;
 import util.StringUtil;
 
 import com.hp.hpl.jena.query.QuerySolution;
@@ -40,8 +41,12 @@ public class UniversityMap extends PApplet{
 	
 	private UnfoldingMap map;
 	private ListBox conflist;
+	
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
+	
+	private LocationCache locationCache;
+	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.UniversityMap" });
 	}
@@ -52,6 +57,9 @@ public class UniversityMap extends PApplet{
 		
 		smooth();
 		Ani.init(this);
+		
+		// create location cache
+		locationCache = new OrganizationLocationCache("data/org_locs.txt");
 		
 	    map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
 	    map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
@@ -147,7 +155,7 @@ public class UniversityMap extends PApplet{
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
 			String orgname = StringUtil.getString(sol.getLiteral("orgname"));
-			Location loc = LocationCache.get(orgname);
+			Location loc = locationCache.get(orgname);
 			if(loc != null){
 				NamedMarker m = new NamedMarker(orgname, loc);
 				orgMarkMan.addMarker(m);
@@ -202,8 +210,8 @@ public class UniversityMap extends PApplet{
 			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
 			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = LocationCache.get(orgName);
-			Location end = LocationCache.get(otherOrgName);
+			Location start = locationCache.get(orgName);
+			Location end = locationCache.get(otherOrgName);
 			if(start == null || end == null)
 				continue;
 			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
@@ -240,8 +248,8 @@ public class UniversityMap extends PApplet{
 			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
 			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = LocationCache.get(orgName);
-			Location end = LocationCache.get(otherOrgName);
+			Location start = locationCache.get(orgName);
+			Location end = locationCache.get(otherOrgName);
 			if(start == null || end == null)
 				continue;
 			SimpleLinesMarker m = new SimpleLinesMarker(start, end);

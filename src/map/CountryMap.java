@@ -6,7 +6,9 @@ import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
-import util.CountryLocationCache;
+import util.StringUtil;
+import util.location.CountryLocationCache;
+import util.location.LocationCache;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
@@ -40,6 +42,8 @@ public class CountryMap extends PApplet{
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> countryMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
 	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
+	
+	private LocationCache locationCache;
 
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.CountryMap" });
@@ -52,6 +56,8 @@ public class CountryMap extends PApplet{
 		smooth();
 		Ani.init(this);
 
+		// create location cache
+		locationCache = new CountryLocationCache("data/countries_locs.txt");
 
 		map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
 		map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
@@ -75,8 +81,12 @@ public class CountryMap extends PApplet{
 	 */
 	private void populateGUI() {
 		List<RDFNode> confs = RDFModel.getConferences();
-		for(int i = 0; i < confs.size(); i++){
-			String acronym = confs.get(i).asResource().getProperty(RDFModel.getModel().getProperty("http://data.semanticweb.org/ns/swc/ontology#hasAcronym")).getString();
+		for (int i = 0; i < confs.size(); i++) {
+			String acronym = StringUtil.getString(confs
+					.get(i)
+					.asResource()
+					.getProperty(
+							RDFModel.getModel().getProperty("http://data.semanticweb.org/ns/swc/ontology#hasAcronym")));
 			conflist.addItem(acronym, i);
 		}
 	}
@@ -143,7 +153,7 @@ public class CountryMap extends PApplet{
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
 			String countryName = parseCountryURL(sol.getResource("country").toString());
-			Location loc = CountryLocationCache.get(countryName);
+			Location loc = locationCache.get(countryName);
 			if(loc != null){
 				NamedMarker m = new NamedMarker(countryName, loc);
 				countryMarkMan.addMarker(m);
@@ -154,8 +164,7 @@ public class CountryMap extends PApplet{
 	public String parseCountryURL(String countryURL){
 		int lastIndexSlash = countryURL.lastIndexOf("/");
 		String country = countryURL.substring(lastIndexSlash + 1);
-		//System.out.printf("%s parsed from %s\n", country, countryURL);
-		return country;
+		return StringUtil.getString(country);
 	}
 
 	/**
@@ -204,8 +213,8 @@ public class CountryMap extends PApplet{
 			String countryName = parseCountryURL(sol.getResource("country").toString());
 			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = CountryLocationCache.get(countryName);
-			Location end = CountryLocationCache.get(otherCountryName);
+			Location start = locationCache.get(countryName);
+			Location end = locationCache.get(otherCountryName);
 			if(start == null || end == null)
 				continue;
 			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
@@ -243,8 +252,8 @@ public class CountryMap extends PApplet{
 			String countryName = parseCountryURL(sol.getResource("country").toString());
 			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = CountryLocationCache.get(countryName);
-			Location end = CountryLocationCache.get(otherCountryName);
+			Location start = locationCache.get(countryName);
+			Location end = locationCache.get(otherCountryName);
 			if(start == null || end == null)
 				continue;
 			SimpleLinesMarker m = new SimpleLinesMarker(start, end);

@@ -24,6 +24,9 @@ public class StringUtil {
 		// subjects
 		duplicates.put("intelligent tutoring system", "intelligent tutoring systems");
 		duplicates.put("bayesian network", "bayesian networks");
+		
+		// countries
+		duplicates.put("New_Zeland", "New_Zealand");
 	}
 
 	public static String getString(String s) {
