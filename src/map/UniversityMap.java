@@ -2,6 +2,7 @@ package map;
 
 import java.util.List;
 
+import marker.EdgeMarker;
 import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
@@ -25,6 +26,7 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
 import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
+import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import de.looksgood.ani.Ani;
 
 
@@ -43,7 +45,7 @@ public class UniversityMap extends PApplet{
 	private ListBox conflist;
 	
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
-	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
+	private MarkerManager<EdgeMarker> edgeMarkMan;
 	
 	private LocationCache locationCache;
 	
@@ -66,13 +68,13 @@ public class UniversityMap extends PApplet{
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
 	    
-	    edgeMarkMan = new MarkerManager<SimpleLinesMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
-	    addAllEdgeMarkers();
 	    orgMarkMan = new MarkerManager<NamedMarker>();
 		addAllOrgMarkers();
+		edgeMarkMan = new MarkerManager<EdgeMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
+	    addAllEdgeMarkers();
 		
-		map.addMarkerManager(edgeMarkMan);
 		map.addMarkerManager(orgMarkMan);
+		map.addMarkerManager(edgeMarkMan);
 		
 		setupGUI();
 		populateGUI();
@@ -210,12 +212,13 @@ public class UniversityMap extends PApplet{
 			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
 			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = locationCache.get(orgName);
-			Location end = locationCache.get(otherOrgName);
+			NamedMarker start = getMarkerWithName(orgName);
+			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
-			m.setStrokeColor(0x0100FF00);
+			EdgeMarker m = new EdgeMarker(start, end);
+			m.setColor(0xF0505050);
+			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
 			//System.out.printf("Common papers for %s to %s:%d\n", orgName, otherOrgName, coopCount);
@@ -248,12 +251,13 @@ public class UniversityMap extends PApplet{
 			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
 			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = locationCache.get(orgName);
-			Location end = locationCache.get(otherOrgName);
+			NamedMarker start = getMarkerWithName(orgName);
+			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
-			m.setStrokeColor(0xF000FF00);
+			EdgeMarker m = new EdgeMarker(start, end);
+			m.setColor(0xF0505050);
+			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
 			System.out.printf("Common papers for %s to %s:%d\n", orgName, otherOrgName, coopCount);
@@ -271,9 +275,63 @@ public class UniversityMap extends PApplet{
 	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
 	 */
 	public void mouseMoved(){
+		List<EdgeMarker> edgeHitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
+		boolean edgeMarked = false;
+		for (EdgeMarker m : edgeMarkMan.getMarkers()){
+			if(edgeHitMarkers.contains(m)){
+				m.setSelected(true);
+				m.getM1().setSelected(true);
+				m.getM2().setSelected(true);
+				//System.out.printf("Marked edge from: %s to %s\n", ((NamedMarker)m.getM1()).getName(), ((NamedMarker)m.getM2()).getName());
+				edgeMarked = true;
+			}else{
+				m.setSelected(false);
+			}
+		}
+		if(edgeMarked)
+			return; //don't deselect orgMarker if an edge is marked
 		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
+		
+	}
+	
+	/**
+	 * Find the marker with a given name
+	 */
+	public NamedMarker getMarkerWithName(String name){
+		for(NamedMarker nm : orgMarkMan.getMarkers()){
+			if(nm.getName().equals(name))
+				return nm;
+		}
+		//System.out.println("Could not find marker with name:" + name);
+		return null;
+	}
+	
+	
+	/**
+	 * Moved to EdgeMarker
+	 */
+	@Deprecated
+	public boolean isInside(int mouseX, int mouseY, SimpleLinesMarker marker){
+		Location l1 = marker.getLocations().get(0);
+		Location l2 = marker.getLocations().get(1);
+		ScreenPosition  sposa = map.getScreenPosition(l1),
+						sposb = map.getScreenPosition(l2);
+		float 	xa = sposa.x,
+				xb = sposb.x,
+				ya = sposa.y,
+				yb = sposb.y;
+		if(mouseX > Math.max(xa, xb)
+				|| mouseX < Math.min(xa, xb)
+				|| mouseY > Math.max(ya, yb)
+				|| mouseY < Math.min(ya, yb)){
+			return false;
+		}
+		float	m = (ya - yb) / (xa - xb),
+				b = ya - m * xa,
+				d = (float) (Math.abs(mouseY - m * mouseX - b) / Math.sqrt(m*m + 1));
+		return d < 3;
 	}
 }
