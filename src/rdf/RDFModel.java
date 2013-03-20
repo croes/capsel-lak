@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -18,6 +20,8 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.util.FileManager;
 
 public class RDFModel {
+	
+	private static final Logger logger = Logger.getLogger(RDFModel.class);
 	
 	private static Model model;
 	
@@ -210,7 +214,7 @@ public class RDFModel {
 		while(rs.hasNext()){
 			sol = rs.next();
 			paperCount = sol.getLiteral("paperCount").getInt();
-			System.out.printf("Paper count for %s:%d\n",text, sol.getLiteral("paperCount").getInt());
+			logger.debug(String.format("Paper count for %s:%d\n",text, sol.getLiteral("paperCount").getInt()));
 		}
 		return paperCount;
 	}
