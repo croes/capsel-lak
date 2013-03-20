@@ -12,7 +12,9 @@
 ## TODO
 
 - Verschillende kleuren voor edges/nodes?
-- Meer filtering-opties (conferentie scheiden van jaar bvb)
+- Meer filtering-opties (conferentie scheiden van jaar bvb) -> show multiple at the same time and differentiate between them with colors or shading. 
+- Add other visualisations (like number of authors/papers for that conference/year)
+- brushing and linking, link the different visualisations together (click on something on the 1 visualisation will change something in another visualisation)
 - Country locations veranderen naar hoofdstad, halen van de google maps api
 - Kleuren aanpassen en over nadenken
 - Countrymap samenbrengen met UniversityMap (met animatie)
