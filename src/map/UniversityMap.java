@@ -45,7 +45,7 @@ public class UniversityMap extends PApplet{
 	private ListBox conflist;
 	
 	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
-	private MarkerManager<EdgeMarker> edgeMarkMan;
+	private MarkerManager<EdgeMarker<NamedMarker>> edgeMarkMan;
 	
 	private LocationCache locationCache;
 	
@@ -68,9 +68,9 @@ public class UniversityMap extends PApplet{
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
 	    
-	    orgMarkMan = new MarkerManager<NamedMarker>();
+	    orgMarkMan = new MarkerManager<>();
 		addAllOrgMarkers();
-		edgeMarkMan = new MarkerManager<EdgeMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
+		edgeMarkMan = new MarkerManager<>();
 	    addAllEdgeMarkers();
 		
 	    map.addMarkerManager(edgeMarkMan);
@@ -216,7 +216,7 @@ public class UniversityMap extends PApplet{
 			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			EdgeMarker m = new EdgeMarker(start, end);
+			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
 			m.setColor(0xF0505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
@@ -255,7 +255,7 @@ public class UniversityMap extends PApplet{
 			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			EdgeMarker m = new EdgeMarker(start, end);
+			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
 			m.setColor(0xF0505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
@@ -275,22 +275,12 @@ public class UniversityMap extends PApplet{
 	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
 	 */
 	public void mouseMoved(){
-		List<EdgeMarker> edgeHitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
-		boolean edgeMarked = false;
-		for (EdgeMarker m : edgeMarkMan.getMarkers()){
-			if(edgeHitMarkers.contains(m)){
-				m.setSelected(true);
-				m.getM1().setSelected(true);
-				m.getM2().setSelected(true);
-				//System.out.printf("Marked edge from: %s to %s\n", ((NamedMarker)m.getM1()).getName(), ((NamedMarker)m.getM2()).getName());
-				edgeMarked = true;
-			}else{
-				m.setSelected(false);
-			}
+		List<? extends Marker> hitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
+		for (Marker m : edgeMarkMan.getMarkers()){
+			m.setSelected(hitMarkers.contains(m));
 		}
-		if(edgeMarked)
-			return; //don't deselect orgMarker if an edge is marked
-		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
+		
+		hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
@@ -305,7 +295,7 @@ public class UniversityMap extends PApplet{
 			if(nm.getName().equals(name))
 				return nm;
 		}
-		//System.out.println("Could not find marker with name:" + name);
+
 		return null;
 	}
 	

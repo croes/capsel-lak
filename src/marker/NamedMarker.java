@@ -10,7 +10,7 @@ import de.fhpotsdam.unfolding.marker.SimplePointMarker;
 import de.looksgood.ani.Ani;
 import de.looksgood.ani.easing.Easing;
 
-public class NamedMarker extends SimplePointMarker {
+public class NamedMarker extends SimplePointMarker implements LineSelectableMarker {
 	
 	private static enum State {
 		POINT, SHOWING, SHOWN, HIDING;
@@ -57,6 +57,11 @@ public class NamedMarker extends SimplePointMarker {
 		}
 		
 		super.setSelected(selected);
+		onSelectedUpdated();
+	}
+	
+	private void onSelectedUpdated() {
+		boolean selected = this.selected || (countSelectedLines > 0);
 		
 		if (!animated) {
 			state = (selected) ? State.SHOWN : State.POINT;
@@ -151,7 +156,7 @@ public class NamedMarker extends SimplePointMarker {
 	//@Override
 	public synchronized void addSelectedLine() {
 		countSelectedLines++;
-		if (countSelectedLines == 1) setSelected(true);
+		if (countSelectedLines == 1) onSelectedUpdated();
 	}
 
 	//@Override
@@ -160,8 +165,8 @@ public class NamedMarker extends SimplePointMarker {
 		if (countSelectedLines < 0) {
 			countSelectedLines = 0;
 		}
-		if (countSelectedLines == 0) setSelected(false);
-		
+		if (countSelectedLines == 0)
+			onSelectedUpdated();
 	}
 
 	@Override
