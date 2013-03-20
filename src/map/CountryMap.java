@@ -2,6 +2,7 @@ package map;
 
 import java.util.List;
 
+import marker.EdgeMarker;
 import marker.HideableMarker;
 import marker.NamedMarker;
 import processing.core.PApplet;
@@ -41,7 +42,7 @@ public class CountryMap extends PApplet{
 	private UnfoldingMap map;
 	private ListBox conflist;
 	private MarkerManager<NamedMarker> countryMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
-	private MarkerManager<SimpleLinesMarker> edgeMarkMan;
+	private MarkerManager<EdgeMarker> edgeMarkMan;
 	
 	private LocationCache locationCache;
 
@@ -64,13 +65,13 @@ public class CountryMap extends PApplet{
 		map.zoomAndPanTo(new Location(20,0), 3);
 		MapUtils.createDefaultEventDispatcher(this, map);
 
-		edgeMarkMan = new MarkerManager<SimpleLinesMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
-		addAllEdgeMarkers();
 		countryMarkMan = new MarkerManager<NamedMarker>();
 		addAllCountryMarkers();
+		edgeMarkMan = new MarkerManager<EdgeMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
+		addAllEdgeMarkers();
 
-		map.addMarkerManager(edgeMarkMan);
 		map.addMarkerManager(countryMarkMan);
+		map.addMarkerManager(edgeMarkMan);
 
 		setupGUI();
 		populateGUI();
@@ -213,16 +214,29 @@ public class CountryMap extends PApplet{
 			String countryName = parseCountryURL(sol.getResource("country").toString());
 			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = locationCache.get(countryName);
-			Location end = locationCache.get(otherCountryName);
+			NamedMarker start = getMarkerWithName(countryName);
+			NamedMarker end = getMarkerWithName(otherCountryName);
 			if(start == null || end == null)
 				continue;
-			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
-			m.setStrokeColor(0x0100FF00);
+			EdgeMarker m = new EdgeMarker(start, end);
+			m.setColor(0xF0505050);
+			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
 			System.out.printf("Common papers for %s to %s:%d\n", countryName, otherCountryName, coopCount);
 		}
+	}
+	
+	/**
+	 * Find the marker with a given name
+	 */
+	public NamedMarker getMarkerWithName(String name){
+		for(NamedMarker nm : countryMarkMan.getMarkers()){
+			if(nm.getName().equals(name))
+				return nm;
+		}
+		//System.out.println("Could not find marker with name:" + name);
+		return null;
 	}
 
 	/**
@@ -252,12 +266,13 @@ public class CountryMap extends PApplet{
 			String countryName = parseCountryURL(sol.getResource("country").toString());
 			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
 			int coopCount = sol.getLiteral("coopCount").getInt();
-			Location start = locationCache.get(countryName);
-			Location end = locationCache.get(otherCountryName);
+			NamedMarker start = getMarkerWithName(countryName);
+			NamedMarker end = getMarkerWithName(otherCountryName);
 			if(start == null || end == null)
 				continue;
-			SimpleLinesMarker m = new SimpleLinesMarker(start, end);
-			m.setStrokeColor(0xF000FF00);
+			EdgeMarker m = new EdgeMarker(start, end);
+			m.setColor(0xF0505050);
+			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
 			System.out.printf("Common papers for %s to %s:%d for conf:%s\n", countryName, otherCountryName, coopCount, confAcronym);
@@ -275,6 +290,21 @@ public class CountryMap extends PApplet{
 	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
 	 */
 	public void mouseMoved(){
+		List<EdgeMarker> edgeHitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
+		boolean edgeMarked = false;
+		for (EdgeMarker m : edgeMarkMan.getMarkers()){
+			if(edgeHitMarkers.contains(m)){
+				m.setSelected(true);
+				m.getM1().setSelected(true);
+				m.getM2().setSelected(true);
+				//System.out.printf("Marked edge from: %s to %s\n", ((NamedMarker)m.getM1()).getName(), ((NamedMarker)m.getM2()).getName());
+				edgeMarked = true;
+			}else{
+				m.setSelected(false);
+			}
+		}
+		if(edgeMarked)
+			return; //don't deselect orgMarker if an edge is marked
 		List<NamedMarker> hitMarkers = countryMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : countryMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
