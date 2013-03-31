@@ -43,3 +43,4 @@ latitude,longitude,name,desc,color
 52.5167007;13.3999996;Germany;-;
 -42.0000000;174.0000000;New_Zealand;-;
 51.5000000;-0.1166670;United Kingdom;-;
+37.5833015;127.0000000;South Korea;-;
