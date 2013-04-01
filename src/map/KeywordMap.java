@@ -2,20 +2,13 @@ package map;
 
 import java.util.List;
 
-import marker.EdgeMarker;
-import marker.HideableMarker;
-import marker.NamedMarker;
-import processing.core.PApplet;
-import rdf.RDFModel;
-import util.location.LocationCache;
-import util.location.OrganizationLocationCache;
-import util.StringUtil;
-
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+import com.sun.opengl.impl.packrect.Rect;
 
+import marker.NamedMarker;
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
 import controlP5.ControlP5;
@@ -24,37 +17,50 @@ import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
-import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
-import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import de.looksgood.ani.Ani;
+import processing.core.PApplet;
+import rdf.RDFModel;
+import util.StringUtil;
+import util.location.LocationCache;
+import util.location.OrganizationLocationCache;
 
+public class KeywordMap extends PApplet{
+	
+	private static final int WIDTH = 1040;
+	private static final int HEIGHT = 720;
+	
+	private static final int   CONFLIST_X = 50,
+							   CONFLIST_Y = 50,
+							   CONFLIST_W = 120,
+							   CONFLIST_H = 120,
+							   CONFLIST_ITEMH = 15;
+	
+	private static final int   KEYWLIST_W = 140,
+			  				   KEYWLIST_H = HEIGHT - 2 * CONFLIST_Y,
+			  				   KEYWLIST_Y = CONFLIST_Y,
+			  				   KEYWLIST_X = WIDTH - KEYWLIST_W,
+			  				   KEYWLIST_ITEMH = 20;
 
-public class UniversityMap extends PApplet{
-	
-	private static final long serialVersionUID = -7231594744155656041L;
-	
-	public static class HideableLineMarker extends HideableMarker<SimpleLinesMarker> {
-		
-		public HideableLineMarker(Location start, Location end) {
-			super(new SimpleLinesMarker(start, end));
-		}
-	}
+	/**
+	 * Generated serial version ID
+	 */
+	private static final long serialVersionUID = -2929486399441127311L;
 	
 	private UnfoldingMap map;
 	private ListBox conflist;
+	private ListBox keywordList;
 	
 	private MarkerManager<NamedMarker> orgMarkMan;
-	private MarkerManager<EdgeMarker<NamedMarker>> edgeMarkMan;
 	
 	private LocationCache locationCache;
 	
 	public static void main(String[] args) {
-		PApplet.main(new String[] { "map.UniversityMap" });
+		PApplet.main(new String[] { "map.KeywordMap" });
 	}
 	
 	public void setup(){
-		size(1040, 720); //, GLConstants.GLGRAPHICS); //no bug with markers going outside of map area if this is used
+		size(WIDTH, HEIGHT);
 		frameRate(30);
 		
 		smooth();
@@ -63,23 +69,29 @@ public class UniversityMap extends PApplet{
 		// create location cache
 		locationCache = new OrganizationLocationCache("data/org_locs.txt");
 		
-	    map = new UnfoldingMap(this); //, 0, 200, this.width, this.height-200);
+		map = new UnfoldingMap(this){
+			@Override
+			public boolean isHit(float checkX, float checkY){
+				return !isInsideRect(CONFLIST_X, CONFLIST_Y, CONFLIST_W, CONFLIST_H, checkX, checkY)
+						&& !isInsideRect(KEYWLIST_X, KEYWLIST_Y, KEYWLIST_W, KEYWLIST_H, checkX, checkY);
+			}
+			
+			private boolean isInsideRect(float x, float y, float w, float h, float checkX, float checkY){
+				return (checkX >= x) && (checkX <= x + w) && (checkY >= y) && (checkY <= y + h);
+			}
+		}; //, 0, 200, this.width, this.height-200);
 	    map.setTweening(true); //(doesn't work). it does now, what changed? smooth()?
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
 	    
 	    orgMarkMan = new MarkerManager<>();
-		addAllOrgMarkers();
-		edgeMarkMan = new MarkerManager<>();
-	    addAllEdgeMarkers();
-		
-	    map.addMarkerManager(edgeMarkMan);
-		map.addMarkerManager(orgMarkMan);
-		
-		setupGUI();
+	    addAllOrgMarkers();
+	    map.addMarkerManager(orgMarkMan);
+	    
+	    setupGUI();
 		populateGUI();
 	}
-
+	
 	/**
 	 * Populate the extra GUI elements with the needed data.
 	 */
@@ -93,24 +105,32 @@ public class UniversityMap extends PApplet{
 					));
 			conflist.addItem(acronym, i);
 		}
+		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
+		keywordList.addItems(keywords);
 	}
-
+	
 	/**
 	 * Add all the extra GUI elements (apart from the map) to the PApplet.
 	 */
 	private void setupGUI(){
 		ControlP5 cp5 = new ControlP5(this);
 		conflist = cp5.addListBox("Conferences")
-						.setPosition(50, 50)
-						.setSize(120, 120)
-						.setBarHeight(15)
-						.setItemHeight(15);
+						.setPosition(CONFLIST_X, CONFLIST_Y)
+						.setSize(CONFLIST_W, CONFLIST_H)
+						.setBarHeight(CONFLIST_ITEMH)
+						.setItemHeight(CONFLIST_ITEMH);
 		
 		cp5.addButton("ShowAllButton")
 				 .setCaptionLabel("Show all")
 			     .setValue(0)
 			     .setPosition(200,35)
 			     .setSize(120,19);
+		
+		keywordList = cp5.addListBox("Keywords")
+							.setPosition(KEYWLIST_X,KEYWLIST_Y)
+							.setSize(KEYWLIST_W, KEYWLIST_H)
+							.setBarHeight(KEYWLIST_ITEMH)
+							.setItemHeight(KEYWLIST_ITEMH);
 		//Listener to control selection events.
 		cp5.addListener(new ControlListener(){
 			@Override
@@ -132,8 +152,6 @@ public class UniversityMap extends PApplet{
 	 */
 	private void showAll(){
 		showAllOrgMarkers();
-		edgeMarkMan.clearMarkers();
-		addAllEdgeMarkers();
 	}
 	
 	/**
@@ -144,10 +162,8 @@ public class UniversityMap extends PApplet{
 	private void showOnlyConf(String confAcronym) {
 		hideAllOrgMarkers();
 		showOrgMarkersOf(confAcronym);
-		edgeMarkMan.clearMarkers();
-		addEdgeMarkers(confAcronym);
 	}
-
+	
 	/**
 	 * Adds all the organization markers to the map.
 	 */
@@ -197,72 +213,6 @@ public class UniversityMap extends PApplet{
 			}
 		}
 	}
-
-	/**
-	 * Adds all the line markers between the org markers.
-	 */
-	private void addAllEdgeMarkers(){
-		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogether();
-
-		QuerySolution sol;
-		while(rs.hasNext()){
-			sol = rs.next();
-			if(!isValidSolutionForMarker(sol))
-				continue;
-			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
-			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
-			int coopCount = sol.getLiteral("coopCount").getInt();
-			NamedMarker start = getMarkerWithName(orgName);
-			NamedMarker end = getMarkerWithName(otherOrgName);
-			if(start == null || end == null)
-				continue;
-			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0x50505050);
-			m.setHighlightColor(0xFFFF0000);
-			m.setStrokeWeight(coopCount);
-			edgeMarkMan.addMarker(m);
-			//System.out.printf("Common papers for %s to %s:%d\n", orgName, otherOrgName, coopCount);
-		}
-	}
-	
-	/**
-	 * Tests whether the given querySolution can be used to create a valid marker.
-	 * @param solution
-	 * @return
-	 */
-	private boolean isValidSolutionForMarker(QuerySolution solution){
-		if(solution.getLiteral("orgName") == null || solution.getLiteral("otherOrgName") == null)
-			return false;
-		return true;
-	}
-	
-	/**
-	 * Adds all the edge markers of the given conference name to the map.
-	 * @param confAcronym
-	 */
-	private void addEdgeMarkers(String confAcronym){
-		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogetherFromGivenConference(confAcronym);
-		//ResultSetFormatter.out(rs);
-		QuerySolution sol;
-		while(rs.hasNext()){
-			sol = rs.next();
-			if(!isValidSolutionForMarker(sol))
-				continue;
-			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
-			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
-			int coopCount = sol.getLiteral("coopCount").getInt();
-			NamedMarker start = getMarkerWithName(orgName);
-			NamedMarker end = getMarkerWithName(otherOrgName);
-			if(start == null || end == null)
-				continue;
-			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0x50505050);
-			m.setHighlightColor(0xFFFF0000);
-			m.setStrokeWeight(coopCount);
-			edgeMarkMan.addMarker(m);
-			System.out.printf("Common papers for %s to %s:%d\n", orgName, otherOrgName, coopCount);
-		}
-	}
 	
 	@Override
 	public void draw(){
@@ -275,16 +225,10 @@ public class UniversityMap extends PApplet{
 	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
 	 */
 	public void mouseMoved(){
-		List<? extends Marker> hitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
-		for (Marker m : edgeMarkMan.getMarkers()){
-			m.setSelected(hitMarkers.contains(m));
-		}
-		
-		hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
+		List<? extends Marker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
-		
 	}
 	
 	/**
@@ -295,33 +239,6 @@ public class UniversityMap extends PApplet{
 			if(nm.getName().equals(name))
 				return nm;
 		}
-
 		return null;
-	}
-	
-	
-	/**
-	 * Moved to EdgeMarker
-	 */
-	@Deprecated
-	public boolean isInside(int mouseX, int mouseY, SimpleLinesMarker marker){
-		Location l1 = marker.getLocations().get(0);
-		Location l2 = marker.getLocations().get(1);
-		ScreenPosition  sposa = map.getScreenPosition(l1),
-						sposb = map.getScreenPosition(l2);
-		float 	xa = sposa.x,
-				xb = sposb.x,
-				ya = sposa.y,
-				yb = sposb.y;
-		if(mouseX > Math.max(xa, xb)
-				|| mouseX < Math.min(xa, xb)
-				|| mouseY > Math.max(ya, yb)
-				|| mouseY < Math.min(ya, yb)){
-			return false;
-		}
-		float	m = (ya - yb) / (xa - xb),
-				b = ya - m * xa,
-				d = (float) (Math.abs(mouseY - m * mouseX - b) / Math.sqrt(m*m + 1));
-		return d < 3;
 	}
 }
