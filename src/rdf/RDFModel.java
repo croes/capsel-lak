@@ -4,8 +4,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -22,7 +22,7 @@ import com.hp.hpl.jena.util.FileManager;
 
 public class RDFModel {
 	
-	private static final Logger logger = LogManager.getFormatterLogger(RDFModel.class);
+	private static final Logger logger = LogManager.getLogger(RDFModel.class);
 	
 	private static Model model;
 	

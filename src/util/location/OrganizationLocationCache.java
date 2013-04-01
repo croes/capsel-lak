@@ -8,7 +8,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
-import org.apache.log4j.Logger;
+import log.LogManager;
+import log.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,7 +18,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 
 public class OrganizationLocationCache extends LocationCache {
 
-	private static final Logger logger = Logger.getLogger(OrganizationLocationCache.class);
+	private static final Logger logger = LogManager.getLogger(OrganizationLocationCache.class);
 
 	private static final String GOOGLE_PLACES_API_KEY = "AIzaSyCkUxgtcX32ogBa2Odtf2L4IWsYAH81mfw";
 

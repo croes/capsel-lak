@@ -4,12 +4,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 public class TaskManager {
 
-	private static final Logger logger = LogManager.getFormatterLogger(TaskManager.class);
+	private static final Logger logger = LogManager.getLogger(TaskManager.class);
 
 	private static class ThreadFactory implements java.util.concurrent.ThreadFactory {
 

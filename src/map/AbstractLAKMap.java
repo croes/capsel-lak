@@ -7,8 +7,8 @@ import marker.NamedMarker;
 import marker.ProxyMarker;
 import marker.SelectableMarkerManager;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 import processing.core.PApplet;
 import rdf.RDFModel;
@@ -33,7 +33,7 @@ public abstract class AbstractLAKMap extends PApplet {
 
 	private static final long serialVersionUID = -4973608268494925502L;
 
-	private static final Logger logger = LogManager.getFormatterLogger(AbstractLAKMap.class);
+	private static final Logger logger = LogManager.getLogger(AbstractLAKMap.class);
 
 	protected UnfoldingMap map;
 

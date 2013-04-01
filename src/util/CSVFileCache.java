@@ -9,12 +9,12 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 public abstract class CSVFileCache {
 
-	private static final Logger logger = LogManager.getFormatterLogger(CSVFileCache.class);
+	private static final Logger logger = LogManager.getLogger(CSVFileCache.class);
 	
 	private static final Pattern csvPattern = Pattern.compile(
 			"\"([^\"]*)\"|(?<=;|^)([^;]*)(?=;|$)"

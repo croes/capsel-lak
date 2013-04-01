@@ -8,8 +8,8 @@ import marker.ProxyMarker;
 import marker.SelectableMarkerManager;
 import marker.SwitchableNamedMarker;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 import processing.core.PApplet;
 import rdf.RDFModel;
@@ -43,7 +43,7 @@ public class SwitchingLAKMap extends PApplet {
 
 	private static final long serialVersionUID = -4973608268494925502L;
 
-	private static final Logger logger = LogManager.getFormatterLogger(SwitchingLAKMap.class);
+	private static final Logger logger = LogManager.getLogger(SwitchingLAKMap.class);
 	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.SwitchingLAKMap"});
@@ -77,8 +77,8 @@ public class SwitchingLAKMap extends PApplet {
 		// create location cache
 		logger.debug("Creating LocationCaches");
 		try {
-			countryLocationCache = new CountryLocationCache("data/countries_locs.txt");
-			universityLocationCache = new OrganizationLocationCache("data/org_locs.txt");
+			countryLocationCache = new CountryLocationCache("data/countries.csv");
+			universityLocationCache = new OrganizationLocationCache("data/organisations.csv");
 		} catch (IOException e) {
 			logger.fatal("Location cache file produced an IO Error");
 			logger.catching(e);

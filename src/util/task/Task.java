@@ -1,11 +1,11 @@
 package util.task;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 public abstract class Task implements Runnable {
 
-	private static final Logger logger = LogManager.getFormatterLogger(Task.class);
+	private static final Logger logger = LogManager.getLogger(Task.class);
 
 	private final String name;
 

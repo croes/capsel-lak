@@ -2,7 +2,9 @@ package util.location;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import log.LogManager;
+import log.Logger;
+
 import org.geonames.Toponym;
 import org.geonames.ToponymSearchCriteria;
 import org.geonames.ToponymSearchResult;
@@ -20,7 +22,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 
 public class CountryLocationCache extends LocationCache {
 
-	private static final Logger logger = Logger.getLogger(CountryLocationCache.class);
+	private static final Logger logger = LogManager.getLogger(CountryLocationCache.class);
 
 	public CountryLocationCache(String fileName) throws IOException {
 		super(fileName);

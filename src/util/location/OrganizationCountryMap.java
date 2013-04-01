@@ -3,8 +3,8 @@ package util.location;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 import rdf.RDFModel;
 import util.StringUtil;
@@ -14,7 +14,7 @@ import com.hp.hpl.jena.query.ResultSet;
 
 public class OrganizationCountryMap {
 
-	private static final Logger logger = LogManager.getFormatterLogger(OrganizationCountryMap.class);
+	private static final Logger logger = LogManager.getLogger(OrganizationCountryMap.class);
 
 	private static OrganizationCountryMap instance;
 

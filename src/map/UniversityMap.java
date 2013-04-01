@@ -6,8 +6,8 @@ import marker.EdgeMarker;
 import marker.NamedMarker;
 import marker.ProxyMarker;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import log.LogManager;
+import log.Logger;
 
 import processing.core.PApplet;
 import rdf.RDFModel;
@@ -24,7 +24,7 @@ import de.fhpotsdam.unfolding.geo.Location;
 
 public class UniversityMap extends AbstractLAKMap {
 
-	private static final Logger logger = LogManager.getFormatterLogger(UniversityMap.class);
+	private static final Logger logger = LogManager.getLogger(UniversityMap.class);
 
 	private static final long serialVersionUID = -7231594744155656041L;
 
