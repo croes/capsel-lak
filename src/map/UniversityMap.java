@@ -68,9 +68,9 @@ public class UniversityMap extends PApplet{
 	    map.zoomAndPanTo(new Location(20,0), 3);
 	    MapUtils.createDefaultEventDispatcher(this, map);
 	    
-	    orgMarkMan = new MarkerManager<NamedMarker>();
+	    orgMarkMan = new MarkerManager<>();
 		addAllOrgMarkers();
-		edgeMarkMan = new MarkerManager<EdgeMarker>();//Generics in markermanager, but not in map.addMarkerManager, cause fuck you.
+		edgeMarkMan = new MarkerManager<>();
 	    addAllEdgeMarkers();
 		
 	    map.addMarkerManager(edgeMarkMan);
@@ -216,8 +216,8 @@ public class UniversityMap extends PApplet{
 			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			EdgeMarker m = new EdgeMarker(start, end);
-			m.setColor(0x50505050);
+			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
+			m.setColor(0xF0505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
@@ -255,7 +255,7 @@ public class UniversityMap extends PApplet{
 			NamedMarker end = getMarkerWithName(otherOrgName);
 			if(start == null || end == null)
 				continue;
-			EdgeMarker m = new EdgeMarker(start, end);
+			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
 			m.setColor(0xF0505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
@@ -290,13 +290,19 @@ public class UniversityMap extends PApplet{
 				m.getM1().setSelected(false);
 				m.getM2().setSelected(false);
 			}
+		List<? extends Marker> hitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
+		for (Marker m : edgeMarkMan.getMarkers()){
+			m.setSelected(hitMarkers.contains(m));
 		}
 		if(edgeMarked)
 			return;
 		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
+		
+		hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
+		
 	}
 	
 	/**
@@ -307,7 +313,7 @@ public class UniversityMap extends PApplet{
 			if(nm.getName().equals(name))
 				return nm;
 		}
-		//System.out.println("Could not find marker with name:" + name);
+
 		return null;
 	}
 	

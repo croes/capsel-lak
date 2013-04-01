@@ -1,4 +1,5 @@
-latitude,longitude,name,desc,color52.5167007;13.3999996;Germany;-;
+latitude,longitude,name,desc,color
+52.5167007;13.3999996;Germany;-;
 -35.3079987;149.1239929;Australia;-;
 39.7599983;-98.5000000;USA;-;
 41.9000015;12.4833002;Italy;-;

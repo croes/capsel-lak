@@ -11,6 +11,24 @@
 
 ## TODO
 
-- show/hide edges?
 - Verschillende kleuren voor edges/nodes?
-- Meer filtering-opties
+- Meer filtering-opties (conferentie scheiden van jaar bvb) -> show multiple at the same time and differentiate between them with colors or shading. 
+- Add other visualisations (like number of authors/papers for that conference/year)
+- brushing and linking, link the different visualisations together (click on something on the 1 visualisation will change something in another visualisation)
+- Country locations veranderen naar hoofdstad, halen van de google maps api
+- Kleuren aanpassen en over nadenken
+- Countrymap samenbrengen met UniversityMap (met animatie)
+- Readability van markers (bvb met rechthoek waarin geschreven wordt.)
+
+
+## TODO tegen volgende week
+- Presentatie van 10-15 minuten, 
+- - focus op wat er uit u brainstorm is gekomen
+- - wat is de onderzoeksvraag die je wilt oplossen, 
+- - welke opties heb je overwogen, wat waren de voor en nadelen?
+- - DEMO 
+- - Welke verhalen heb je al uit u visualisatie gehaald?
+- - Wat hebt ge geleerd uit dat proces
+- - Hoe werk je samen, hoe wordt het werk verdeeld?
+- - Technische problemen gehad? 
+- - Hoe wil je deze visualisatie(s) nu evalueren? (gewoon op de conferentie staan, maar wat gaat ge die mensen dan vragen?)

@@ -2,31 +2,41 @@ package marker;
 
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
-import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 
-public class EdgeMarker extends SimpleLinesMarker {
+public class EdgeMarker<E extends LineSelectableMarker> extends SimpleLinesMarker {
 	
-	private Marker m1, m2;
+	private E m1, m2;
 	
-	public EdgeMarker(Marker m1, Marker m2){
+	public EdgeMarker(E m1, E m2){
 		super(m1.getLocation(), m2.getLocation());
 		this.m1 = m1;
 		this.m2 = m2;
 	}
 	
-	public Marker getM1(){
+	public E getM1(){
 		return m1;
 	}
 	
-	public Marker getM2(){
+	public E getM2(){
 		return m2;
 	}
 	
 	@Override
 	public void setSelected(boolean selected){
+		if (selected == this.selected)
+			return;
+		
 		this.selected = selected;
+		
+		if (selected) {
+			m1.addSelectedLine();
+			m2.addSelectedLine();
+		} else {
+			m1.removeSelectedLine();
+			m2.removeSelectedLine();
+		}
 	}
 	
 	@Override
