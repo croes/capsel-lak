@@ -29,6 +29,7 @@ public class StringUtil {
 		duplicates.put("New_Zeland", "New_Zealand");
 		
 		duplicates.put("UK", "United Kingdom");
+		duplicates.put("United_Kingdom", "United Kingdom");
 	}
 
 	public static String getString(String s) {

@@ -44,7 +44,7 @@ public class UniversityMap extends PApplet{
 	private UnfoldingMap map;
 	private ListBox conflist;
 	
-	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
+	private MarkerManager<NamedMarker> orgMarkMan;
 	private MarkerManager<EdgeMarker> edgeMarkMan;
 	
 	private LocationCache locationCache;
@@ -217,7 +217,7 @@ public class UniversityMap extends PApplet{
 			if(start == null || end == null)
 				continue;
 			EdgeMarker m = new EdgeMarker(start, end);
-			m.setColor(0xF0505050);
+			m.setColor(0x50505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
@@ -276,6 +276,7 @@ public class UniversityMap extends PApplet{
 	 */
 	public void mouseMoved(){
 		List<EdgeMarker> edgeHitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
+		
 		boolean edgeMarked = false;
 		for (EdgeMarker m : edgeMarkMan.getMarkers()){
 			if(edgeHitMarkers.contains(m)){
@@ -286,15 +287,16 @@ public class UniversityMap extends PApplet{
 				edgeMarked = true;
 			}else{
 				m.setSelected(false);
+				m.getM1().setSelected(false);
+				m.getM2().setSelected(false);
 			}
 		}
 		if(edgeMarked)
-			return; //don't deselect orgMarker if an edge is marked
+			return;
 		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
 			m.setSelected(hitMarkers.contains(m));
 		}
-		
 	}
 	
 	/**
