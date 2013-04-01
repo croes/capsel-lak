@@ -217,7 +217,7 @@ public class UniversityMap extends PApplet{
 			if(start == null || end == null)
 				continue;
 			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0xF0505050);
+			m.setColor(0x50505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
@@ -256,7 +256,7 @@ public class UniversityMap extends PApplet{
 			if(start == null || end == null)
 				continue;
 			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0xF0505050);
+			m.setColor(0x50505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkMan.addMarker(m);
