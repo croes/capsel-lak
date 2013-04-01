@@ -27,7 +27,9 @@ public class UniversityMap extends AbstractLAKMap {
 	private static final Logger logger = LogManager.getLogger(UniversityMap.class);
 
 	private static final long serialVersionUID = -7231594744155656041L;
-
+	
+	private LocationCache locationCache;
+	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.UniversityMap" });
 	}
@@ -96,7 +98,7 @@ public class UniversityMap extends AbstractLAKMap {
 			if (start == null || end == null)
 				continue;
 			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0xF0505050);
+			m.setColor(0x50505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkerManager.addOriginalMarker(m);
@@ -134,7 +136,7 @@ public class UniversityMap extends AbstractLAKMap {
 			if (start == null || end == null)
 				continue;
 			EdgeMarker<NamedMarker> m = new EdgeMarker<>(start, end);
-			m.setColor(0xF0505050);
+			m.setColor(0x50505050);
 			m.setHighlightColor(0xFFFF0000);
 			m.setStrokeWeight(coopCount);
 			edgeMarkerManager.addOriginalMarker(m);

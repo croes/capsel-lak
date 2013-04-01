@@ -6,6 +6,7 @@ import java.util.List;
 
 import log.LogManager;
 import log.Logger;
+import util.StringUtil;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -14,6 +15,7 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFactory;
+import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -37,7 +39,10 @@ public class RDFModel {
 		,"data/edm2012.rdf"
 		,"data/jets12_fulltext_.rdf"
 		};
-	
+	public static void main(String[] args) {
+		ResultSet rs = getAllKeywords();
+		ResultSetFormatter.out(rs);
+	}
 	public static Model getModel(){
 		if(model == null){
 			parseModels();
@@ -319,6 +324,26 @@ public class RDFModel {
 				"FILTER (?otherPerson != ?person && ?otherCountry != ?country)" +
 				"} GROUP BY ?country ?otherCountry \n"
 				);
+	}
+	
+	public static ResultSet getAllKeywords(){
+		return RDFModel.query(
+				"SELECT DISTINCT ?keyword \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?paper rdf:type swrc:InProceedings . \n" +
+				"?paper dc:subject ?keyword . \n" +
+				"} ORDER BY ASC(?keyword)\n");
+	}
+	
+	public static List<String> getResultsAsStrings(ResultSet rs, String fieldname){
+		List<String> strings = new ArrayList<>();
+		while (rs.hasNext()) {
+			QuerySolution sol = rs.next();
+			String resultstr = StringUtil.getString(sol.getLiteral(fieldname));
+			strings.add(resultstr);
+		}
+		return strings;
 	}
 	
 }

@@ -19,6 +19,10 @@
   </appenders>
   <loggers>
     <logger name="de" level="warn" />
+    
+    <logger name="com.hp.hpl.jena" level="warn" />
+    <logger name="org.apache.jena" level="warn" />
+    
     <root level="debug">
       <appender-ref ref="out"/>
       <appender-ref ref="err"/>
