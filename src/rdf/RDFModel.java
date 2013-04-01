@@ -4,7 +4,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -21,7 +22,7 @@ import com.hp.hpl.jena.util.FileManager;
 
 public class RDFModel {
 	
-	private static final Logger logger = Logger.getLogger(RDFModel.class);
+	private static final Logger logger = LogManager.getFormatterLogger(RDFModel.class);
 	
 	private static Model model;
 	
@@ -45,7 +46,7 @@ public class RDFModel {
 	}
 	
 	private static void parseModels(){
-		System.out.println("Loading RDF models...");
+		logger.debug("Loading RDF models...");
 		model = ModelFactory.createDefaultModel();
 		for(String modelFileName : modelFileNames){
 			model = model.union(RDFModel.parseModel(modelFileName));
@@ -53,6 +54,8 @@ public class RDFModel {
 	}
 	
 	private static Model parseModel(String fileName){
+		logger.debug("Parsing model %s", fileName);
+		
 		// create an empty model
 		Model model = ModelFactory.createDefaultModel();
 
@@ -125,6 +128,18 @@ public class RDFModel {
 				"?otherOrg foaf:name ?otherOrgName . \n" +
 				"FILTER (?otherMember != ?member && ?otherOrg != ?org)" +
 				"} GROUP BY ?orgName ?otherOrgName\n"
+				);
+	}
+	
+	public static ResultSet getOrganisationCountryMap() {
+		return query(
+				"SELECT DISTINCT ?orgName ?country \n"
+		+		"WHERE { "
+		+		"?org rdf:type foaf:Organization . "
+		+		"?org foaf:name ?orgName . "
+		+		"?org foaf:member ?member . "
+		+		"?member foaf:based_near ?country"
+		+		"}"
 				);
 	}
 	

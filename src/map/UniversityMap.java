@@ -1,5 +1,7 @@
 package map;
 
+import java.io.IOException;
+
 import marker.EdgeMarker;
 import marker.NamedMarker;
 import marker.ProxyMarker;
@@ -32,7 +34,15 @@ public class UniversityMap extends AbstractLAKMap {
 
 	@Override
 	protected LocationCache createLocationCache() {
-		return new OrganizationLocationCache("data/org_locs.txt");
+		try {
+			return new OrganizationLocationCache("data/organisations.csv");
+		} catch (IOException e) {
+			logger.fatal("Organization location cache file produced IO Error");
+			logger.catching(e);
+			
+			exit();
+			return null;
+		}
 	}
 
 	@Override

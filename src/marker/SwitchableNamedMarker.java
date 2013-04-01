@@ -111,6 +111,9 @@ public class SwitchableNamedMarker extends SimplePointMarker implements LineSele
 	}
 
 	public void draw(PGraphics pg, float x, float y) {
+		if (switchState != SwitchState.ONE && switchState != SwitchState.TWO) {
+			location.toString();
+		}
 		if (isHidden())
 			return;
 		if (state == State.POINT) {
@@ -274,8 +277,8 @@ public class SwitchableNamedMarker extends SimplePointMarker implements LineSele
 			break;
 		default:
 			location.set(
-					loc_two.x * switchCurrent + loc_one.x * (100 - switchCurrent),
-					loc_two.y * switchCurrent + loc_one.y * (100 - switchCurrent),
+					(loc_two.x * switchCurrent + loc_one.x * (100 - switchCurrent)) / 100f,
+					(loc_two.y * switchCurrent + loc_one.y * (100 - switchCurrent)) / 100f,
 					0
 					);
 		}

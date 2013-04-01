@@ -1,5 +1,6 @@
 package map;
 
+import java.io.IOException;
 import java.util.List;
 
 import marker.EdgeMarker;
@@ -15,10 +16,13 @@ import rdf.RDFModel;
 import util.StringUtil;
 import util.location.CountryLocationCache;
 import util.location.LocationCache;
+import util.location.OrganizationCountryMap;
 import util.location.OrganizationLocationCache;
 import util.task.Task;
 import util.task.TaskManager;
 
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import controlP5.ControlEvent;
@@ -35,11 +39,15 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
 
-public abstract class SwitchingLAKMap extends PApplet {
+public class SwitchingLAKMap extends PApplet {
 
 	private static final long serialVersionUID = -4973608268494925502L;
 
 	private static final Logger logger = LogManager.getFormatterLogger(SwitchingLAKMap.class);
+	
+	public static void main(String[] args) {
+		PApplet.main(new String[] { "map.SwitchingLAKMap"});
+	}
 
 	protected UnfoldingMap map;
 
@@ -49,24 +57,37 @@ public abstract class SwitchingLAKMap extends PApplet {
 	protected LocationCache countryLocationCache, universityLocationCache;
 
 	protected ListBox conferenceList;
-	
+
 	private TaskManager mouseMovedTaskManager = new TaskManager("MouseMoved", 1);
+
+	private OrganizationCountryMap orgCountryMap;
 
 	@Override
 	public void setup() {
-		logger.debug("Setting up AbstractLAKMap");
+		logger.debug("Setting up SwitchingLAKMap");
 
 		size(1040, 720);
 		frameRate(30);
 		smooth();
 
+		logger.debug("Initializing libAni");
 		// init LibAni
 		Ani.init(this);
 
 		// create location cache
 		logger.debug("Creating LocationCaches");
-		countryLocationCache = new CountryLocationCache("data/countries_locs.txt");
-		universityLocationCache = new OrganizationLocationCache("data/org_locs.txt");
+		try {
+			countryLocationCache = new CountryLocationCache("data/countries_locs.txt");
+			universityLocationCache = new OrganizationLocationCache("data/org_locs.txt");
+		} catch (IOException e) {
+			logger.fatal("Location cache file produced an IO Error");
+			logger.catching(e);
+			
+			exit();
+		}
+
+		logger.debug("Creating OrganizationCountryMap");
+		orgCountryMap = OrganizationCountryMap.getInstance();
 
 		logger.debug("Creating map");
 		map = new UnfoldingMap(this);
@@ -75,23 +96,24 @@ public abstract class SwitchingLAKMap extends PApplet {
 		map.zoomAndPanTo(new Location(20, 0), 8);
 		EventDispatcher dispatcher = MapUtils.createDefaultEventDispatcher(this, map);
 		dispatcher.register(new MapEventListener() {
-			
+
 			int prevZoomLevel = 8;
-			
+
 			final int TRESHOLD = 5;
-			
+
 			@Override
 			public void onManipulation(MapEvent event) {
 				if (!(event instanceof ZoomMapEvent))
 					return;
-				
+
 				ZoomMapEvent zevent = (ZoomMapEvent) event;
 				logger.trace("%s\t- zoom:%.2f - zoomDelta:%.2f - zoomLevel:%d - zoomLevelDelta:%d",
-						zevent.getSubType(), zevent.getZoom(), zevent.getZoomDelta(), zevent.getZoomLevel(), zevent.getZoomLevelDelta());
+						zevent.getSubType(), zevent.getZoom(), zevent.getZoomDelta(), zevent.getZoomLevel(),
+						zevent.getZoomLevelDelta());
 				logger.trace("ZoomLevel map: %d", map.getZoomLevel());
-				
+
 				final int zoomLevel;
-				switch(zevent.getSubType()) {
+				switch (zevent.getSubType()) {
 				case ZoomMapEvent.ZOOM_TO_LEVEL:
 					zoomLevel = zevent.getZoomLevel();
 					break;
@@ -101,18 +123,18 @@ public abstract class SwitchingLAKMap extends PApplet {
 				default:
 					return;
 				}
-				
+
 				int prevZoomLevel = this.prevZoomLevel;
 				this.prevZoomLevel = zoomLevel;
-				
+
 				if ((zoomLevel > TRESHOLD) == (prevZoomLevel > TRESHOLD))
 					return;
-				
+
 				for (ProxyMarker<SwitchableNamedMarker> m : nodeMarkerManager) {
 					m.getOriginal().switchMarker(zoomLevel <= TRESHOLD);
 				}
 			}
-			
+
 			@Override
 			public String getId() {
 				return map.getId();
@@ -132,7 +154,7 @@ public abstract class SwitchingLAKMap extends PApplet {
 		logger.debug("Populating the map");
 		addAllNodeMarkers();
 		addAllEdgeMarkers();
-		
+
 		logger.debug("AbstractLAKMap set up");
 	}
 
@@ -146,15 +168,15 @@ public abstract class SwitchingLAKMap extends PApplet {
 		// draw the FPS
 		drawFPS();
 	}
-	
+
 	private void drawFPS() {
 		String s = String.format("FPS: %.7f", frameRate);
 		float width = textWidth(s);
-		
+
 		stroke(0);
 		fill(0);
 		rect(10, 5, width + 10, 20);
-		
+
 		stroke(0xFFEEEEEE);
 		fill(0xFFEEEEEE);
 		text(s, 15, 20);
@@ -200,7 +222,36 @@ public abstract class SwitchingLAKMap extends PApplet {
 	}
 
 	protected void addAllNodeMarkers() {
-		
+		ResultSet rs = RDFModel.getAllOrganisations();
+
+		while (rs.hasNext()) {
+			QuerySolution sol = rs.next();
+			String universityName = StringUtil.getString(sol.getLiteral("orgname"));
+			String countryName = orgCountryMap.get(universityName);
+
+			if (countryName == null) {
+				logger.error("No country found for university %s", universityName);
+				continue;
+			}
+
+			if (getNodeMarkerWithName(universityName) != null)
+				continue;
+
+			Location universityLocation = universityLocationCache.get(universityName);
+			Location countryLocation = countryLocationCache.get(countryName);
+
+			if (universityLocation == null) {
+				logger.error("No location for university %s found", universityName);
+				continue;
+			}
+			if (countryLocation == null) {
+				logger.error("No location for country %s found", countryName);
+				continue;
+			}
+
+			nodeMarkerManager.addOriginalMarker(new SwitchableNamedMarker(universityName, universityLocation,
+					countryName, countryLocation));
+		}
 	}
 
 	/**
@@ -221,7 +272,9 @@ public abstract class SwitchingLAKMap extends PApplet {
 		}
 	}
 
-	protected abstract void showNodeMarkersOf(String conference);
+	protected void showNodeMarkersOf(String conference) {
+		// TODO
+	}
 
 	/**
 	 * Find the marker with a given name
@@ -278,12 +331,12 @@ public abstract class SwitchingLAKMap extends PApplet {
 				for (Marker m : edgeMarkerManager) {
 					m.setSelected(hitEdgeMarkers.contains(m));
 				}
-				
+
 				for (Marker m : nodeMarkerManager) {
 					m.setSelected(hitNodeMarkers.contains(m));
 				}
 			}
-			
+
 		});
 	}
 }

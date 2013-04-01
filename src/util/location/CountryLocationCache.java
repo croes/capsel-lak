@@ -1,5 +1,7 @@
 package util.location;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.geonames.Toponym;
 import org.geonames.ToponymSearchCriteria;
@@ -20,7 +22,7 @@ public class CountryLocationCache extends LocationCache {
 
 	private static final Logger logger = Logger.getLogger(CountryLocationCache.class);
 
-	public CountryLocationCache(String fileName) {
+	public CountryLocationCache(String fileName) throws IOException {
 		super(fileName);
 	}
 

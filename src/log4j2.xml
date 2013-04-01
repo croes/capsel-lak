@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration strict="true" status="ERROR" name="CapSel-LAK">
   <appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <!--<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>-->
+    <Console name="out" target="SYSTEM_OUT">
+      <filters>
+	      <filter type="ThresholdFilter" level="TRACE" onMatch="NEUTRAL" onMismatch="DENY" />
+		  <filter type="ThresholdFilter" level="ERROR" onMatch="DENY" onMismatch="ACCEPT" />
+      </filters>
+
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n"/>
+    </Console>
+    <Console name="err" target="SYSTEM_ERR">
+      <filters>
+	      <filter type="ThresholdFilter" level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
+      </filters>
+      
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n"/>
     </Console>
   </appenders>
   <loggers>
     <logger name="de" level="warn" />
     <root level="debug">
-      <appender-ref ref="Console"/>
+      <appender-ref ref="out"/>
+      <appender-ref ref="err"/>
     </root>
   </loggers>
 </configuration>

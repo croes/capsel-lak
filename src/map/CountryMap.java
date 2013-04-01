@@ -1,5 +1,7 @@
 package map;
 
+import java.io.IOException;
+
 import marker.EdgeMarker;
 import marker.NamedMarker;
 import marker.ProxyMarker;
@@ -41,19 +43,13 @@ public class CountryMap extends AbstractLAKMap {
 		
 		while (rs.hasNext()) {
 			QuerySolution sol = rs.next();
-			String countryName = parseCountryURL(sol.getResource("country").toString());
+			String countryName = StringUtil.parseCountryURL(sol.getResource("country"));
 			Location loc = locationCache.get(countryName);
 			if (loc != null) {
 				NamedMarker m = new NamedMarker(countryName, loc);
 				nodeMarkerManager.addOriginalMarker(m);
 			}
 		}
-	}
-
-	private String parseCountryURL(String countryURL) {
-		int lastIndexSlash = countryURL.lastIndexOf("/");
-		String country = countryURL.substring(lastIndexSlash + 1);
-		return StringUtil.getString(country);
 	}
 
 	/*
@@ -64,7 +60,7 @@ public class CountryMap extends AbstractLAKMap {
 	@Override
 	protected void showNodeMarkersOf(String confAcronym) {
 		for (String countryURL : RDFModel.getCountriesOfConference(confAcronym)) {
-			String countryName = parseCountryURL(countryURL);
+			String countryName = StringUtil.parseCountryURL(countryURL);
 			for (ProxyMarker<NamedMarker> m : nodeMarkerManager) {
 				if (m.getOriginal().getName().equals(countryName))
 					m.setHidden(false);
@@ -86,8 +82,8 @@ public class CountryMap extends AbstractLAKMap {
 			sol = rs.next();
 			if (!isValidSolutionForMarker(sol))
 				continue;
-			String countryName = parseCountryURL(sol.getResource("country").toString());
-			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
+			String countryName = StringUtil.parseCountryURL(sol.getResource("country"));
+			String otherCountryName = StringUtil.parseCountryURL(sol.getResource("otherCountry"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
 			NamedMarker start = getNodeMarkerWithName(countryName);
 			NamedMarker end = getNodeMarkerWithName(otherCountryName);
@@ -130,8 +126,8 @@ public class CountryMap extends AbstractLAKMap {
 			if (!isValidSolutionForMarker(sol))
 				continue;
 
-			String countryName = parseCountryURL(sol.getResource("country").toString());
-			String otherCountryName = parseCountryURL(sol.getResource("otherCountry").toString());
+			String countryName = StringUtil.parseCountryURL(sol.getResource("country"));
+			String otherCountryName = StringUtil.parseCountryURL(sol.getResource("otherCountry"));
 			int coopCount = sol.getLiteral("coopCount").getInt();
 			NamedMarker start = getNodeMarkerWithName(countryName);
 			NamedMarker end = getNodeMarkerWithName(otherCountryName);
@@ -149,6 +145,14 @@ public class CountryMap extends AbstractLAKMap {
 
 	@Override
 	protected LocationCache createLocationCache() {
-		return new CountryLocationCache("data/countries_locs.txt");
+		try {
+			return new CountryLocationCache("data/countries.csv");
+		} catch (IOException e) {
+			logger.fatal("Country location cache file produced IO Error");
+			logger.catching(e);
+			
+			exit();
+			return null;
+		}
 	}
 }

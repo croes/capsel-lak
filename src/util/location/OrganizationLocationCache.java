@@ -20,7 +20,7 @@ public class OrganizationLocationCache extends LocationCache {
 
 	private static final String GOOGLE_PLACES_API_KEY = "AIzaSyCkUxgtcX32ogBa2Odtf2L4IWsYAH81mfw";
 
-	public OrganizationLocationCache(String fileName) {
+	public OrganizationLocationCache(String fileName) throws IOException {
 		super(fileName);
 	}
 
