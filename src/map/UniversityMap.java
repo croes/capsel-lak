@@ -44,8 +44,8 @@ public class UniversityMap extends PApplet{
 	private UnfoldingMap map;
 	private ListBox conflist;
 	
-	private MarkerManager<NamedMarker> orgMarkMan;
-	private MarkerManager<EdgeMarker> edgeMarkMan;
+	private MarkerManager<NamedMarker> orgMarkMan; //todo: Till vragen over marker manager (vooral map.addMarkerManager, geen correcte generics)
+	private MarkerManager<EdgeMarker<NamedMarker>> edgeMarkMan;
 	
 	private LocationCache locationCache;
 	
@@ -275,28 +275,10 @@ public class UniversityMap extends PApplet{
 	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
 	 */
 	public void mouseMoved(){
-		List<EdgeMarker> edgeHitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
-		
-		boolean edgeMarked = false;
-		for (EdgeMarker m : edgeMarkMan.getMarkers()){
-			if(edgeHitMarkers.contains(m)){
-				m.setSelected(true);
-				m.getM1().setSelected(true);
-				m.getM2().setSelected(true);
-				//System.out.printf("Marked edge from: %s to %s\n", ((NamedMarker)m.getM1()).getName(), ((NamedMarker)m.getM2()).getName());
-				edgeMarked = true;
-			}else{
-				m.setSelected(false);
-				m.getM1().setSelected(false);
-				m.getM2().setSelected(false);
-			}
 		List<? extends Marker> hitMarkers = edgeMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : edgeMarkMan.getMarkers()){
 			m.setSelected(hitMarkers.contains(m));
 		}
-		if(edgeMarked)
-			return;
-		List<NamedMarker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		
 		hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
 		for (Marker m : orgMarkMan.getMarkers()) {
