@@ -6,6 +6,8 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+import com.sun.istack.internal.logging.Logger;
+
 import marker.NamedMarker;
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
@@ -39,6 +41,11 @@ public class KeywordMap extends PApplet{
 			  				   KEYWLIST_Y = CONFLIST_Y,
 			  				   KEYWLIST_X = WIDTH - KEYWLIST_W,
 			  				   KEYWLIST_ITEMH = 20;
+	
+	private static final int   DEFAULT_MARKER_COLOR = 0x50505050,
+							   HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050;
+	
+	private static final Logger logger = Logger.getLogger(KeywordMap.class);
 
 	/**
 	 * Generated serial version ID
@@ -52,6 +59,8 @@ public class KeywordMap extends PApplet{
 	private MarkerManager<NamedMarker> orgMarkMan;
 	
 	private LocationCache locationCache;
+	
+	private String currConf;
 	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.KeywordMap" });
@@ -88,6 +97,8 @@ public class KeywordMap extends PApplet{
 	    
 	    setupGUI();
 		populateGUI();
+		
+		currConf = null;
 	}
 	
 	/**
@@ -116,7 +127,9 @@ public class KeywordMap extends PApplet{
 						.setPosition(CONFLIST_X, CONFLIST_Y)
 						.setSize(CONFLIST_W, CONFLIST_H)
 						.setBarHeight(CONFLIST_ITEMH)
-						.setItemHeight(CONFLIST_ITEMH);
+						.setItemHeight(CONFLIST_ITEMH)
+						.setColorActive(0x50505050)
+						.setValue(0f);
 		
 		cp5.addButton("ShowAllButton")
 				 .setCaptionLabel("Show all")
@@ -129,6 +142,7 @@ public class KeywordMap extends PApplet{
 							.setSize(KEYWLIST_W, KEYWLIST_H)
 							.setBarHeight(KEYWLIST_ITEMH)
 							.setItemHeight(KEYWLIST_ITEMH);
+		
 		//Listener to control selection events.
 		cp5.addListener(new ControlListener(){
 			@Override
@@ -136,9 +150,16 @@ public class KeywordMap extends PApplet{
 				if (e.isGroup() && e.getGroup().getName().equals("Conferences")) {
 					int idx = (int)e.getGroup().getValue();
 					String acro = conflist.getItem(idx).getName();
+					currConf = acro;
 					showOnlyConf(acro);
 				}
-				if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
+				else if (e.isGroup() && e.getGroup().getName().equals("Keywords")) {
+					int idx = (int)e.getGroup().getValue();
+					String keyword = keywordList.getItem(idx).getName();
+					logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
+					markMarkers(currConf, keyword);
+				}
+				else if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
 					showAll();
 				}
 			}
@@ -153,6 +174,7 @@ public class KeywordMap extends PApplet{
 		keywordList.clear();
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
 		keywordList.addItems(keywords);
+		currConf = null;
 	}
 	
 	/**
@@ -168,6 +190,21 @@ public class KeywordMap extends PApplet{
 		keywordList.addItems(keywords);
 	}
 	
+	private void clearMarkedMarkers(){
+		for(Marker m : orgMarkMan.getMarkers()){
+			m.setColor(DEFAULT_MARKER_COLOR);
+		}
+	}
+	
+	private void markMarkers(String confAcronym, String keyword){
+		clearMarkedMarkers();
+		List<String> orgnames = RDFModel.getResultsAsStrings(RDFModel.getOrgsWithKeyword(confAcronym, keyword), "orgname");
+		for(String orgName : orgnames){
+			NamedMarker nm = getMarkerWithName(orgName);
+			nm.setColor(HIGHLIGHTED_MARKER_COLOR);
+		}
+	}
+	
 	/**
 	 * Adds all the organization markers to the map.
 	 */
@@ -181,6 +218,7 @@ public class KeywordMap extends PApplet{
 			if(loc != null){
 				NamedMarker m = new NamedMarker(orgname, loc);
 				orgMarkMan.addMarker(m);
+				m.setColor(DEFAULT_MARKER_COLOR);
 			}
 		}
 	}
@@ -224,14 +262,31 @@ public class KeywordMap extends PApplet{
 		map.draw();
 	}
 	
-	/**
-	 * Takes care of the hovering feature. 
-	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
-	 */
-	public void mouseMoved(){
-		List<? extends Marker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
-		for (Marker m : orgMarkMan.getMarkers()) {
-			m.setSelected(hitMarkers.contains(m));
+//	/**
+//	 * Takes care of the hovering feature. 
+//	 * When you hover over a marker, the marker is set to selected and the marker handles it change in look itself.
+//	 */
+//	public void mouseMoved(){
+//		List<? extends Marker> hitMarkers = orgMarkMan.getHitMarkers(mouseX, mouseY);
+//		for (Marker m : orgMarkMan.getMarkers()) {
+//			m.setSelected(hitMarkers.contains(m));
+//		}
+//	}
+	
+	public void mouseClicked(){
+		if(!map.isHit(mouseX, mouseY))
+			return;
+		NamedMarker hitMarker = orgMarkMan.getFirstHitMarker(mouseX, mouseY);
+		if(hitMarker == null)
+			return;
+		hitMarker.setSelected(!hitMarker.isSelected());
+		if(hitMarker.isSelected()){
+			keywordList.clear();
+			keywordList.addItems(RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword"));
+		}else{
+			keywordList.clear();
+			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(currConf), "keyword");
+			keywordList.addItems(keywords);
 		}
 	}
 	

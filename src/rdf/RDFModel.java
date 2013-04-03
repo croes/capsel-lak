@@ -4,8 +4,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import marker.NamedMarker;
-
 import org.apache.log4j.Logger;
 
 import util.StringUtil;
@@ -23,8 +21,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.util.FileManager;
-
-import de.fhpotsdam.unfolding.geo.Location;
 
 public class RDFModel {
 	
@@ -44,7 +40,7 @@ public class RDFModel {
 		,"data/jets12_fulltext_.rdf"
 		};
 	public static void main(String[] args) {
-		ResultSet rs = getAllKeywordsFromConference("LAK2012");
+		ResultSet rs = getKeywordsOfOrg("Ball State University");
 		ResultSetFormatter.out(rs);
 	}
 	public static Model getModel(){
@@ -338,6 +334,49 @@ public class RDFModel {
 				"?paper dc:subject ?keyword . \n" +
 				"} ORDER BY ASC(?keyword)\n");
 	}
+	
+	public static ResultSet getOrgsWithKeyword(String confAcronym, String keyword){
+		if(confAcronym == null){
+			return RDFModel.query(
+					"SELECT DISTINCT ?orgname \n" +
+					"WHERE \n" +
+					"{\n" +
+					"?paper rdf:type swrc:InProceedings . \n" +
+					"?paper dc:subject \"" + keyword + "\". \n" +
+					"?author foaf:made ?paper . \n" +
+					"?author swrc:affiliation ?org . \n" +
+					"?org rdfs:label ?orgname . \n" + 
+					"} ORDER BY ASC(?keyword)\n");
+		}
+		return RDFModel.query(
+				"SELECT DISTINCT ?orgname \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" . \n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?paper swc:isPartOf ?proc . \n" +
+				"?paper rdf:type swrc:InProceedings . \n" +
+				"?paper dc:subject \"" + keyword + "\". \n" +
+				"?author foaf:made ?paper . \n" +
+				"?author swrc:affiliation ?org . \n" +
+				"?org rdfs:label ?orgname . \n" + 
+				"} ORDER BY ASC(?keyword)\n");
+	}
+	
+	public static ResultSet getKeywordsOfOrg(String orgname){
+		return RDFModel.query(
+				"SELECT DISTINCT ?keyword \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?org rdf:type foaf:Organization . \n" +
+				"?org rdfs:label \"" + orgname + "\". \n" + 
+				"?author swrc:affiliation ?org . \n" +
+				"?author foaf:made ?paper . \n" +
+				"?paper rdf:type swrc:InProceedings . \n" +
+				"?paper dc:subject ?keyword . \n" +
+				"} ORDER BY ASC(?keyword)\n");
+	}
+	
 	
 	public static List<String> getResultsAsStrings(ResultSet rs, String fieldname){
 		List<String> strings = new ArrayList<>();
