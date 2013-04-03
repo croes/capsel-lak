@@ -6,8 +6,6 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
-import com.sun.opengl.impl.packrect.Rect;
-
 import marker.NamedMarker;
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
@@ -152,6 +150,9 @@ public class KeywordMap extends PApplet{
 	 */
 	private void showAll(){
 		showAllOrgMarkers();
+		keywordList.clear();
+		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
+		keywordList.addItems(keywords);
 	}
 	
 	/**
@@ -162,6 +163,9 @@ public class KeywordMap extends PApplet{
 	private void showOnlyConf(String confAcronym) {
 		hideAllOrgMarkers();
 		showOrgMarkersOf(confAcronym);
+		keywordList.clear();
+		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(confAcronym), "keyword");
+		keywordList.addItems(keywords);
 	}
 	
 	/**

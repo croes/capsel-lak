@@ -44,7 +44,7 @@ public class RDFModel {
 		,"data/jets12_fulltext_.rdf"
 		};
 	public static void main(String[] args) {
-		ResultSet rs = getAllKeywords();
+		ResultSet rs = getAllKeywordsFromConference("LAK2012");
 		ResultSetFormatter.out(rs);
 	}
 	public static Model getModel(){
@@ -321,6 +321,19 @@ public class RDFModel {
 				"SELECT DISTINCT ?keyword \n" +
 				"WHERE \n" +
 				"{\n" +
+				"?paper rdf:type swrc:InProceedings . \n" +
+				"?paper dc:subject ?keyword . \n" +
+				"} ORDER BY ASC(?keyword)\n");
+	}
+	
+	public static ResultSet getAllKeywordsFromConference(String acronym){
+		return RDFModel.query(
+				"SELECT DISTINCT ?keyword \n" +
+				"WHERE \n" +
+				"{\n" +
+				"?conf swc:hasAcronym \"" + acronym + "\" . \n" +
+				"?conf swc:hasRelatedDocument ?proc . \n" +
+				"?paper swc:isPartOf ?proc . \n" +
 				"?paper rdf:type swrc:InProceedings . \n" +
 				"?paper dc:subject ?keyword . \n" +
 				"} ORDER BY ASC(?keyword)\n");
