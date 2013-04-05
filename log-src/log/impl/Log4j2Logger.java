@@ -5,6 +5,10 @@ import org.apache.logging.log4j.Logger;
 
 public class Log4j2Logger implements log.Logger {
 	
+	static {
+		LogManager.getLogger(Log4j2Logger.class).trace("Using the Log4j2 logging framework");
+	}
+	
 	private final Logger logger;
 	
 	public Log4j2Logger(Class<?> clazz) {
