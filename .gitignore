@@ -15,3 +15,5 @@ lib/opengl.jar
 lib/sqlitejdbc-v056.jar
 lib/unfolding.0.9.beta.jar
 libNative
+
+build.xml
