@@ -1,69 +1,33 @@
 package util.location;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
 
+import util.CSVFileCache;
 import de.fhpotsdam.unfolding.geo.Location;
 
-public abstract class LocationCache implements Iterable<Location> {
+public abstract class LocationCache extends CSVFileCache implements Iterable<Location> {
 
-	private final String fileLocation;
+	private Map<String, Location> locations;
 
-	private final Map<String, Location> locations;
-
-	public LocationCache(String fileLocation) {
-		this.fileLocation = fileLocation;
-		locations = new HashMap<>();
-
-		loadCache();
+	public LocationCache(String fileLocation) throws IOException {
+		super(fileLocation, Format.FLOAT, Format.FLOAT, Format.STRING);
 	}
 
-	protected void loadCache() {
-		Scanner scan = null;
-
-		try {
-			scan = new Scanner(new File(fileLocation));
-			try {
-				scan.nextLine(); // skip header
-				while (scan.hasNextLine()) {
-					String line = scan.nextLine();
-					String[] cells = line.split(";");
-
-					if (cells.length < 3)
-						continue;
-
-					float lat = Float.parseFloat(cells[0]);
-					float lng = Float.parseFloat(cells[1]);
-					String name = cells[2].trim();
-					if (!name.equals(""))
-						locations.put(name, new Location(lat, lng));
-				}
-			} finally {
-				scan.close();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+	protected final void preParseInit() {
+		locations = new HashMap<>();
 	}
 
 	private void writeEntryToFile(String name, Location loc) {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(new FileWriter(fileLocation, true));
-			out.printf("%.7f;%.7f;%s;-;\n", loc.x, loc.y, name);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null)
-				out.close();
-		}
+		CSVLine line = new CSVLine();
+
+		line.setFloat(0, loc.x);
+		line.setFloat(1, loc.y);
+		line.setString(2, name);
+
+		addLine(line);
 	}
 
 	@Override
@@ -84,5 +48,10 @@ public abstract class LocationCache implements Iterable<Location> {
 	}
 
 	protected abstract Location lookup(String name);
+
+	@Override
+	protected void processLine(CSVLine line) {
+		locations.put(line.getString(2), new Location(line.getFloat(0), line.getFloat(1)));
+	}
 
 }

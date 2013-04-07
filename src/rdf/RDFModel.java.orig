@@ -4,11 +4,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import marker.NamedMarker;
+<<<<<<< HEAD
+import org.apache.log4j.Logger;
 
-import log.Logger;
+=======
 import log.LogManager;
-
+import log.Logger;
+>>>>>>> bram
 import util.StringUtil;
 
 import com.hp.hpl.jena.query.Query;

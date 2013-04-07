@@ -1,42 +1,28 @@
 package util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 
 public class StringUtil {
 
-	private static final Map<String, String> duplicates;
+	private static final StringStringCSVFileCache duplicates;
 
 	static {
-		duplicates = new HashMap<>();
-
-		// authors
-		duplicates.put("Ryan S.J.d. Baker", "Ryan S.j.d. Baker");
-
-		// universities
-		duplicates.put("Carnegie Learning Inc", "Carnegie Learning Inc.");
-		duplicates.put("Katholieke Universiteit Leuven", "KU Leuven");
-		duplicates.put("K.U.Leuven", "KU Leuven");
-
-		// subjects
-		duplicates.put("intelligent tutoring system", "intelligent tutoring systems");
-		duplicates.put("bayesian network", "bayesian networks");
-		
-		// countries
-		duplicates.put("New_Zeland", "New_Zealand");
-		
-		duplicates.put("UK", "United Kingdom");
-		duplicates.put("United_Kingdom", "United Kingdom");
+		try {
+			duplicates = new StringStringCSVFileCache("data/strings.csv");
+		} catch (IOException e) {
+			throw new ExceptionInInitializerError(e);
+		}
 	}
 
 	public static String getString(String s) {
 		if (s == null || (s = s.trim()).length() == 0)
 			return "";
 
-		return duplicates.containsKey(s) ? duplicates.get(s) : s;
+		return duplicates.hasKey(s) ? duplicates.get(s) : s;
 	}
 	
 	public static String getString(Literal l) {
@@ -45,6 +31,16 @@ public class StringUtil {
 	
 	public static String getString(Statement s) {
 		return getString(s == null ? "" : s.getString());
+	}
+	
+	public static String parseCountryURL(String countryURL) {
+		int lastIndexSlash = countryURL.lastIndexOf("/");
+		String country = countryURL.substring(lastIndexSlash + 1);
+		return getString(country);
+	}
+	
+	public static String parseCountryURL(Resource s) {
+		return parseCountryURL(String.valueOf(s));
 	}
 
 	private StringUtil() {
