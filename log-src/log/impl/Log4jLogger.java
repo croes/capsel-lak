@@ -3,13 +3,13 @@ package log.impl;
 import org.apache.log4j.Logger;
 
 public class Log4jLogger implements log.Logger {
-	
+
 	static {
 		Logger.getLogger(Log4jLogger.class).trace("Using the Log4j 1.2 logging framework");
 	}
-	
+
 	private final Logger logger;
-	
+
 	public Log4jLogger(Class<?> clazz) {
 		logger = Logger.getLogger(clazz);
 	}
@@ -42,24 +42,17 @@ public class Log4jLogger implements log.Logger {
 
 	@Override
 	public void warn(String s, Object... params) {
-		if (logger.isWarnEnabled()) {
-			logger.warn(String.format(s, params));
-		}
+		logger.warn(String.format(s, params));
 	}
 
 	@Override
 	public void error(String s, Object... params) {
-		if (logger.isErrorEnabled()) {
-			logger.error(String.format(s, params));
-		}
+		logger.error(String.format(s, params));
 	}
 
 	@Override
 	public void fatal(String s, Object... params) {
-		if (logger.isFatalEnabled()) {
-			logger.fatal(String.format(s, params));
-		}
+		logger.fatal(String.format(s, params));
 	}
 
-	
 }
