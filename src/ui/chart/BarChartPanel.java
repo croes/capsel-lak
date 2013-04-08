@@ -1,4 +1,4 @@
-package chart;
+package ui.chart;
 
 import java.awt.Component;
 import java.awt.Dimension;

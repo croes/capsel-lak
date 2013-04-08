@@ -1,11 +1,13 @@
-package main;
+package ui.test;
 
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import chart.BarChartPanel;
-import chart.MultipleConferenceSingleYearBarChart;
-import chart.SingleConferenceMultipleYearBarChart;
+import ui.Colors;
+import ui.chart.BarChartPanel;
+import ui.chart.MultipleConferenceSingleYearBarChart;
+import ui.chart.SingleConferenceMultipleYearBarChart;
+
 
 public class BarChartTest {
 
@@ -28,17 +30,17 @@ public class BarChartTest {
 			SingleConferenceMultipleYearBarChart.Data d4 = new SingleConferenceMultipleYearBarChart.Data(2011, 3);
 
 			contentPane.addChart(new SingleConferenceMultipleYearBarChart("SingleConferenceBarChart", "# papers",
-					UIConstants.getColor(0xFF, 0x00, 0x00), d1, d2, d4));
+					Colors.getColor(0xFF, 0x00, 0x00), d1, d2, d4));
 		}
 		
 		// chart 2
 		{
 			MultipleConferenceSingleYearBarChart.Data d1 = new MultipleConferenceSingleYearBarChart.Data("Conf1", 4,
-					UIConstants.getColor(0xFF, 0x00, 0x00));
+					Colors.getColor(0xFF, 0x00, 0x00));
 			MultipleConferenceSingleYearBarChart.Data d2 = new MultipleConferenceSingleYearBarChart.Data("Conf2", 5,
-					UIConstants.getColor(0x00, 0x00, 0xFF));
+					Colors.getColor(0x00, 0x00, 0xFF));
 			MultipleConferenceSingleYearBarChart.Data d3 = new MultipleConferenceSingleYearBarChart.Data("Conf3", 2,
-					UIConstants.getColor(0x00, 0xFF, 0x00));
+					Colors.getColor(0x00, 0xFF, 0x00));
 
 			contentPane.addChart(new MultipleConferenceSingleYearBarChart("SingleYearBarChart", "# papers", d1, d2, d3));
 		}
@@ -46,11 +48,11 @@ public class BarChartTest {
 		// chart 3
 		{
 			MultipleConferenceSingleYearBarChart.Data d1 = new MultipleConferenceSingleYearBarChart.Data("Conf1", 4,
-					UIConstants.getColor(0xFF, 0x00, 0x00));
+					Colors.getColor(0xFF, 0x00, 0x00));
 			MultipleConferenceSingleYearBarChart.Data d2 = new MultipleConferenceSingleYearBarChart.Data("Conf2", 5,
-					UIConstants.getColor(0x00, 0x00, 0xFF));
+					Colors.getColor(0x00, 0x00, 0xFF));
 			MultipleConferenceSingleYearBarChart.Data d3 = new MultipleConferenceSingleYearBarChart.Data("Conf4", 2,
-					UIConstants.getColor(0x00, 0xFF, 0xFF));
+					Colors.getColor(0x00, 0xFF, 0xFF));
 
 			contentPane.addChart(new MultipleConferenceSingleYearBarChart("SingleYearBarChart", "# papers", d1, d2, d3));
 		}

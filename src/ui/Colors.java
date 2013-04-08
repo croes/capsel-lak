@@ -1,4 +1,4 @@
-package main;
+package ui;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -7,11 +7,11 @@ import java.util.Map;
 import log.LogManager;
 import log.Logger;
 
-public class UIConstants {
+public class Colors {
 
 	private static final Map<Integer, Color> colors;
 
-	private static final Logger logger = LogManager.getLogger(UIConstants.class);
+	private static final Logger logger = LogManager.getLogger(Colors.class);
 
 	static {
 		colors = new HashMap<>();

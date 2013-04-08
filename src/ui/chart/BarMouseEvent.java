@@ -1,4 +1,4 @@
-package chart;
+package ui.chart;
 
 public class BarMouseEvent {
 	

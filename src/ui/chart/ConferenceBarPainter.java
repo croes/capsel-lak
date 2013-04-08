@@ -39,7 +39,7 @@
  *
  */
 
-package chart;
+package ui.chart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -51,12 +51,13 @@ import java.io.Serializable;
 
 import log.LogManager;
 import log.Logger;
-import main.UIConstants;
 
 import org.jfree.chart.HashUtilities;
 import org.jfree.chart.renderer.category.BarPainter;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.ui.RectangleEdge;
+
+import ui.Colors;
 
 /**
  * An implementation of the {@link ConferenceBarPainter} interface that uses
@@ -130,9 +131,9 @@ public class ConferenceBarPainter implements BarPainter, Serializable {
 			baseColor = Color.blue;
 		}
 
-		Color fillColor = UIConstants
+		Color fillColor = Colors
 				.getColor(fillAlpha, baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue());
-		Color strokeColor = UIConstants.getColor(strokeAlpha, baseColor.getRed(), baseColor.getGreen(),
+		Color strokeColor = Colors.getColor(strokeAlpha, baseColor.getRed(), baseColor.getGreen(),
 				baseColor.getBlue());
 		
 		if (showHighlight(row, column)) {
