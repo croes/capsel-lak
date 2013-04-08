@@ -35,28 +35,33 @@ public class ColoredItemChooser extends JPanel {
 				Colors.getColor(0xFF, 0x00, 0xFF), Colors.getColor(0x00, 0xFF, 0xFF), };
 	}
 
-	private static Icon createIcon(final Color color) {
-		return new Icon() {
+	private static class ColorIcon implements Icon {
 
-			@Override
-			public void paintIcon(Component c, Graphics g, int x, int y) {
-				g.setColor(color);
-				g.fillRect(x, y, getIconWidth(), getIconHeight());
-			}
+		private final Color color;
 
-			@Override
-			public int getIconWidth() {
-				return 20;
-			}
+		public ColorIcon(Color color) {
+			this.color = color;
+		}
 
-			@Override
-			public int getIconHeight() {
-				return 20;
-			}
-		};
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			g.setColor(color);
+			g.fillRect(x, y, getIconWidth(), getIconHeight());
+		}
+
+		@Override
+		public int getIconWidth() {
+			return 20;
+		}
+
+		@Override
+		public int getIconHeight() {
+			return 20;
+		}
 	}
 
 	private static final Logger dataLogger = LogManager.getLogger(Data.class);
+
 	private class Data extends JLabel implements MouseListener {
 		private static final long serialVersionUID = -7600717323962308236L;
 
@@ -71,30 +76,30 @@ public class ColoredItemChooser extends JPanel {
 
 			addMouseListener(this);
 		}
-		
+
 		private void setColor(Color color, boolean drawBorder) {
 			this.color = color;
-			
-			setIcon(createIcon(color));
+
+			setIcon(new ColorIcon(color));
 			setBackground(color);
-			
+
 			if (drawBorder)
 				setBorder(BorderFactory.createLineBorder(color));
 		}
-		
+
 		private boolean foregroundShouldBeWhite() {
 			int offsetFromGray = 0;
 			offsetFromGray = color.getRed() - 127;
 			offsetFromGray += color.getGreen() - 127;
 			offsetFromGray += color.getBlue() - 127;
-			
+
 			return offsetFromGray < 0;
 		}
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			dataLogger.trace("Data item %s clicked with button %d", getText(), e.getButton());
-			
+
 			if (e.getButton() == MouseEvent.BUTTON3) {
 				dataLogger.debug("Choosing new color for item %s", getText());
 				Color newColor = JColorChooser.showDialog(getRootPane(), "Pick a new color", color);
@@ -102,7 +107,7 @@ public class ColoredItemChooser extends JPanel {
 
 				if (newColor != null) {
 					setColor(newColor, true);
-					
+
 					fireColorChangedEvent(getText(), color);
 				}
 
@@ -222,7 +227,8 @@ public class ColoredItemChooser extends JPanel {
 	}
 
 	private void fireColorChangedEvent(String item, Color color) {
-		ColoredSelectionChangedListener[] listeners = this.listeners.getListeners(ColoredSelectionChangedListener.class);
+		ColoredSelectionChangedListener[] listeners = this.listeners
+				.getListeners(ColoredSelectionChangedListener.class);
 
 		for (ColoredSelectionChangedListener listener : listeners) {
 			listener.onColorChanged(item, color);
