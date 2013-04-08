@@ -164,8 +164,7 @@ public class ColoredItemChooser extends JPanel {
 		data = new TreeMap<>();
 
 		// set the layout to grid
-		int nbCols = ((items.size() - 1) / NB_IN_SAME_COLUMN) + 1;
-		setLayout(new GridLayout(0, nbCols));
+		setLayout(new GridLayout(NB_IN_SAME_COLUMN, 0));
 
 		int i = 0;
 		for (String item : items) {
@@ -194,33 +193,24 @@ public class ColoredItemChooser extends JPanel {
 		return hasItem(item) ? get(item).color : null;
 	}
 
-	public void addItemSelectionChangedEventListener(SelectionChangedListener listener) {
-		listeners.add(SelectionChangedListener.class, listener);
-	}
-
-	public void removeItemSelectionChangedEventListener(SelectionChangedListener listener) {
-		listeners.remove(SelectionChangedListener.class, listener);
-	}
-
-	public void addColoredItemSelectionChangedEventListener(ColoredSelectionChangedListener listener) {
-		listeners.add(SelectionChangedListener.class, listener);
+	public void addColoredSelectionChangedEventListener(ColoredSelectionChangedListener listener) {
 		listeners.add(ColoredSelectionChangedListener.class, listener);
 	}
 
-	public void removeColoredItemSelectionChangedEventListener(ColoredSelectionChangedListener listener) {
-		listeners.remove(SelectionChangedListener.class, listener);
+	public void removeColoredSelectionChangedEventListener(ColoredSelectionChangedListener listener) {
 		listeners.remove(ColoredSelectionChangedListener.class, listener);
 	}
 
 	private void fireSelectionChangedEvent(String item, boolean selected) {
-		SelectionChangedListener[] listeners = this.listeners.getListeners(SelectionChangedListener.class);
+		ColoredSelectionChangedListener[] listeners = this.listeners
+				.getListeners(ColoredSelectionChangedListener.class);
 
 		if (selected) {
-			for (SelectionChangedListener listener : listeners) {
+			for (ColoredSelectionChangedListener listener : listeners) {
 				listener.onSelected(item);
 			}
 		} else {
-			for (SelectionChangedListener listener : listeners) {
+			for (ColoredSelectionChangedListener listener : listeners) {
 				listener.onUnselected(item);
 			}
 		}
