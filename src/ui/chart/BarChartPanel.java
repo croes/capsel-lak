@@ -76,6 +76,13 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		}
 		charts.clear();
 	}
+	
+	public void setCharts(List<AbstractBarChart> charts) {
+		removeAllCharts();
+		for (AbstractBarChart c : charts) {
+			addChart(c);
+		}
+	}
 
 	public void addBarMouseListener(BarMouseListener listener) {
 		eventListeners.add(BarMouseListener.class, listener);
