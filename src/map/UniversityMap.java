@@ -28,8 +28,6 @@ public class UniversityMap extends AbstractLAKMap {
 
 	private static final long serialVersionUID = -7231594744155656041L;
 	
-	private LocationCache locationCache;
-	
 	public static void main(String[] args) {
 		PApplet.main(new String[] { "map.UniversityMap" });
 	}
