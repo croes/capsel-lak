@@ -54,6 +54,10 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		boolean hasConferenceTakenPlace(String conference, int year);
 
 		SortedSet<String> getOrganizationsForConference(String conference, int year);
+
+		SortedSet<String> getOrganizationsForConferences(Collection<String> conferences, Collection<Integer> years);
+		SortedSet<String> getOrganizationsForConferences(Collection<String> conferences, int year);
+		SortedSet<String> getOrganizationsForConferences(String conference, Collection<Integer> years);
 	}
 
 	public static interface Listener extends EventListener {
@@ -226,6 +230,58 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	public void mouseClick(BarMouseEvent event) {
 		// TODO do something with this?
 	}
+	
+	private AbstractBarChart createSCMYGraph(String organization, String conference, Collection<Integer> years) {
+		SCMYData[] data = new SCMYData[years.size()];
+		
+		int i = 0;
+		for (int year : years) {
+			data[i] = new SCMYData(year, dataProvider.getOrganizationData(conference, organization, year));
+			
+			i++;
+		}
+		
+		return new SingleConferenceMultipleYearBarChart(organization, Y_AXIS_TITLE, conferences.getColor(conference), data);
+
+	}
+	
+	private AbstractBarChart createMCSYGraph(String organization, Collection<String> conferences, int year) {
+		MCSYData[] data = new MCSYData[conferences.size()];
+
+		int i = 0;
+		for (String conference : conferences) {
+			data[i] = new MCSYData(conference, dataProvider.getOrganizationData(conference, organization, year),
+					this.conferences.getColor(conference));
+
+			i++;
+		}
+		
+		return new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data);
+	}
+	
+	private AbstractBarChart createMCMYGraph(String organization, Collection<String> conferences, Collection<Integer> years) {
+		MCMYData[] data = new MCMYData[conferences.size()];
+		int nbYears = years.size();
+		
+		int i = 0;
+		for (String conference : conferences) {
+			
+			MCMYData.Year[] yearDatas = new MCMYData.Year[nbYears];
+			
+			int j = 0;
+			for (int year : years) {
+				yearDatas[j] = new MCMYData.Year(year, dataProvider.getOrganizationData(conference, organization, year));
+				
+				j++;
+			}
+			
+			data[i] = new MCMYData(conference, this.conferences.getColor(conference), yearDatas);
+			
+			i++;
+		}
+		
+		return new MultipleConferenceMultipleYearBarChart(organization, Y_AXIS_TITLE, data);
+	}
 
 	private void drawGraphs() {
 		logger.debug("drawGraphs, nb years: %d, nb conferences: %d", selectedYears.size(), selectedConferences.size());
@@ -285,7 +341,10 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					i++;
 				}
 				
-				newCharts.add(new MultipleConferenceSingleYearBarChart(Integer.toString(year, 10), Y_AXIS_TITLE, data));
+				newCharts.add(new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data));
+				
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year))
+					newCharts.add(createMCSYGraph(org, selectedConferences, year));
 			}
 		} else {
 			if (selectedConferences.size() == 1) {
@@ -301,7 +360,10 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					i++;
 				}
 				
-				newCharts.add(new SingleConferenceMultipleYearBarChart(conference, Y_AXIS_TITLE, conferences.getColor(conference), data));
+				newCharts.add(new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences.getColor(conference), data));
+				
+				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears))
+					newCharts.add(createSCMYGraph(org, conference, selectedYears));
 			} else {
 				// multiple years, multiple conferences
 				
@@ -326,6 +388,9 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 				}
 				
 				newCharts.add(new MultipleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, data));
+				
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears))
+					newCharts.add(createMCMYGraph(org, selectedConferences, selectedYears));
 			}
 		}
 

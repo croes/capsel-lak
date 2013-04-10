@@ -74,8 +74,15 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		setPreferredSize(new Dimension(prefWidth, prefHeight));
 		setMaximumSize(new Dimension(maxWidth, maxHeight));
 	}
+	
+	public void addChart(AbstractBarChart chart) {
+		addChart2(chart);
+		
+		revalidate();
+		repaint();
+	}
 
-	private void addChart(AbstractBarChart chart) {
+	private void addChart2(AbstractBarChart chart) {
 		if (!charts.isEmpty()) {
 			contentPane.add(createSpacer());
 		}
@@ -101,11 +108,11 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 
 		if (charts != null) {
 			for (AbstractBarChart c : charts) {
-				addChart(c);
+				addChart2(c);
 			}
 		}
 
-		invalidate();
+		revalidate();
 		repaint();
 	}
 
