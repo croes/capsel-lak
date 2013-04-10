@@ -12,9 +12,13 @@ public class Colors {
 	private static final Map<Integer, Color> colors;
 
 	private static final Logger logger = LogManager.getLogger(Colors.class);
+	
+	public static final Color highlightColor;
 
 	static {
 		colors = new HashMap<>();
+		
+		highlightColor = getColor(0xD0, 0xD0, 0xFF);
 	}
 
 	public static Color getColor(int argb) {

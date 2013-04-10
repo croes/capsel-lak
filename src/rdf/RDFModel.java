@@ -199,6 +199,32 @@ public class RDFModel {
 	}
 	
 	/**
+	 * 
+	 * @param confAcronym
+	 * @param org
+	 * @return -1 if not found
+	 */
+	public static int getPaperCount(String confAcronym, String org) {
+		ResultSet rs = RDFModel.query(
+				"SELECT (COUNT(?paper) AS ?count) \n" +
+				"WHERE \n" +
+				"{ \n" +
+				"?conf rdf:type swc:ConferenceEvent .\n" +
+				"?conf swc:hasAcronym \"" + confAcronym + "\" .\n" +
+				"?conf swc:hasRelatedDocument ?proc .\n" +
+				"?proc swc:hasPart ?paper .\n" +
+				"?paper dc:creator ?author .\n" +
+				"?author swrc:affiliation ?org .\n" +
+				"?org foaf:name \"" + org + "\"" +
+				"}"
+				);
+		
+		if (!rs.hasNext())
+			return -1;
+		return rs.next().getLiteral("count").getInt();
+	}
+	
+	/**
 	 * Returns all the available conferences.
 	 * @return
 	 */

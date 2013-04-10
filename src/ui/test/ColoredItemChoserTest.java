@@ -4,7 +4,6 @@ import java.awt.Container;
 import java.util.Arrays;
 
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import org.jfree.ui.ApplicationFrame;

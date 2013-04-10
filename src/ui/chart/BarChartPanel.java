@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
 
@@ -46,9 +47,35 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		else
 			add(new JScrollPane(contentPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+		
+		// set the minimum, preferred and maximum size
+		
+		int minHeight, prefHeight, maxHeight;
+		minHeight = prefHeight = maxHeight = AbstractBarChart.HEIGHT;
+		int minWidth, prefWidth, maxWidth;
+		minWidth = prefWidth = maxWidth = AbstractBarChart.WIDTH;
+		if (horizontal) {
+			JScrollBar scrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
+			minHeight += scrollBar.getPreferredSize().height;
+			maxHeight = prefHeight = minHeight;
+			
+			prefWidth *= 2;
+			maxWidth = Integer.MAX_VALUE;
+		} else {
+			JScrollBar scrollBar = new JScrollBar(JScrollBar.VERTICAL);
+			minWidth += scrollBar.getPreferredSize().width;
+			maxWidth = prefWidth = minWidth;
+			
+			prefHeight *= 2;
+			maxHeight = Integer.MAX_VALUE;
+		}
+		
+		setMinimumSize(new Dimension(minWidth, minHeight));
+		setPreferredSize(new Dimension(prefWidth, prefHeight));
+		setMaximumSize(new Dimension(maxWidth, maxHeight));
 	}
 
-	public void addChart(AbstractBarChart chart) {
+	private void addChart(AbstractBarChart chart) {
 		if (!charts.isEmpty()) {
 			contentPane.add(createSpacer());
 		}
@@ -59,15 +86,7 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		chart.addBarMouseListener(this);
 	}
 
-	public void removeChart(AbstractBarChart chart) {
-		contentPane.remove(chart);
-		charts.add(chart);
-
-		removeBarMouseListener(chart);
-		chart.removeBarMouseListener(this);
-	}
-
-	public void removeAllCharts() {
+	private void removeAllCharts() {
 		contentPane.removeAll();
 
 		for (AbstractBarChart chart : charts) {
@@ -76,12 +95,18 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		}
 		charts.clear();
 	}
-	
+
 	public void setCharts(List<AbstractBarChart> charts) {
 		removeAllCharts();
-		for (AbstractBarChart c : charts) {
-			addChart(c);
+
+		if (charts != null) {
+			for (AbstractBarChart c : charts) {
+				addChart(c);
+			}
 		}
+
+		invalidate();
+		repaint();
 	}
 
 	public void addBarMouseListener(BarMouseListener listener) {

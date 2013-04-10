@@ -75,25 +75,22 @@ public class ColoredItemChooser extends JPanel {
 			selected = false;
 
 			addMouseListener(this);
+			
+			setOpaque(false);
+			setBackground(Colors.highlightColor);
+
+			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 
 		private void setColor(Color color, boolean drawBorder) {
 			this.color = color;
 
 			setIcon(new ColorIcon(color));
-			setBackground(color);
 
 			if (drawBorder)
-				setBorder(BorderFactory.createLineBorder(color));
-		}
-
-		private boolean foregroundShouldBeWhite() {
-			int offsetFromGray = 0;
-			offsetFromGray = color.getRed() - 127;
-			offsetFromGray += color.getGreen() - 127;
-			offsetFromGray += color.getBlue() - 127;
-
-			return offsetFromGray < 0;
+				setBorder(BorderFactory.createLineBorder(color, 1));
+			else
+				setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 
 		@Override
@@ -118,14 +115,6 @@ public class ColoredItemChooser extends JPanel {
 			dataLogger.debug("Item %s changed selection", getText());
 
 			setOpaque(selected);
-			if (selected) {
-				if (foregroundShouldBeWhite())
-					setForeground(Color.white);
-				else
-					setForeground(Color.black);
-			} else {
-				setForeground(Color.black);
-			}
 			repaint();
 
 			fireSelectionChangedEvent(getText(), selected);
@@ -146,13 +135,13 @@ public class ColoredItemChooser extends JPanel {
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			dataLogger.trace("Data item %s entered", getText());
-			setBorder(BorderFactory.createLineBorder(color));
+			setBorder(BorderFactory.createLineBorder(color, 1));
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
 			dataLogger.trace("Data item %s left", getText());
-			setBorder(BorderFactory.createEmptyBorder());
+			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 	}
 

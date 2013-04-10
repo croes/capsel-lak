@@ -1,5 +1,6 @@
 package ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Collection;
@@ -15,6 +16,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.event.EventListenerList;
 
+import log.LogManager;
+import log.Logger;
 import ui.chart.AbstractBarChart;
 import ui.chart.BarChartPanel;
 import ui.chart.BarMouseEvent;
@@ -32,6 +35,8 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		BarMouseListener {
 
 	private static final long serialVersionUID = -6697140724684998536L;
+	
+	private static final Logger logger = LogManager.getLogger(ChartSelectionPanel.class);
 
 	public static final String Y_AXIS_TITLE = "papers";
 
@@ -44,11 +49,11 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 		int getMaxYear();
 
-		Collection<String> getConferences();
+		SortedSet<String> getConferences();
 
 		boolean hasConferenceTakenPlace(String conference, int year);
 
-		Collection<String> getOrganizationsForConference(String conference, int year);
+		SortedSet<String> getOrganizationsForConference(String conference, int year);
 	}
 
 	public static interface Listener extends EventListener {
@@ -122,14 +127,27 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		conferences.addColoredSelectionChangedEventListener(this);
 		charts.addBarMouseListener(this);
 
-		setLayout(new BoxLayout(this, horizontal ? BoxLayout.X_AXIS : BoxLayout.Y_AXIS));
+		JPanel subPanel = new JPanel();
+		subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
 		Dimension spacerDimension = new Dimension(5, 5);
 
-		add(conferences);
-		add(Box.createRigidArea(spacerDimension));
-		add(years);
-		add(Box.createRigidArea(spacerDimension));
-		add(charts);
+		subPanel.add(conferences);
+		subPanel.add(Box.createRigidArea(spacerDimension));
+		subPanel.add(years);
+		subPanel.add(Box.createRigidArea(spacerDimension));
+		
+		setLayout(new BorderLayout());
+		{
+			JPanel subPanelContainer = new JPanel();
+			subPanelContainer.setLayout(new BoxLayout(subPanelContainer, horizontal ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
+			
+			subPanelContainer.add(horizontal ? Box.createVerticalGlue() : Box.createHorizontalGlue());
+			subPanelContainer.add(subPanel);
+			subPanelContainer.add(horizontal ? Box.createVerticalGlue() : Box.createHorizontalGlue());
+			
+			add(subPanelContainer, horizontal ? BorderLayout.WEST : BorderLayout.NORTH);
+		}
+		add(charts, BorderLayout.CENTER);
 
 		listeners = new EventListenerList();
 
@@ -169,7 +187,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 	@Override
 	public void onColorChanged(String conference, Color newColor) {
-		// TODO do something with this?
+		drawGraphs();
 	}
 
 	@Override
@@ -210,13 +228,29 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	}
 
 	private void drawGraphs() {
+		logger.debug("drawGraphs, nb years: %d, nb conferences: %d", selectedYears.size(), selectedConferences.size());
+		
 		if (selectedYears.isEmpty() && selectedConferences.isEmpty()) {
-			charts.removeAllCharts();
+			logger.debug("no charts to be shown, clearing panel");
+			charts.setCharts(null);
 			return;
 		}
 
 		List<AbstractBarChart> newCharts = new LinkedList<>();
 		
+		final SortedSet<String> selectedConferences;
+		if (this.selectedConferences.isEmpty())
+			selectedConferences = dataProvider.getConferences();
+		else
+			selectedConferences = this.selectedConferences;
+		
+		final SortedSet<Integer> selectedYears;
+		if (this.selectedYears.isEmpty()) {
+			selectedYears = new TreeSet<>();
+			for (int year = dataProvider.getMinYear(); year <= dataProvider.getMaxYear(); year++)
+				selectedYears.add(year);
+		} else
+			selectedYears = this.selectedYears;
 
 		if (selectedYears.size() == 1) {
 			if (selectedConferences.size() == 1) {
@@ -266,6 +300,8 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					
 					i++;
 				}
+				
+				newCharts.add(new SingleConferenceMultipleYearBarChart(conference, Y_AXIS_TITLE, conferences.getColor(conference), data));
 			} else {
 				// multiple years, multiple conferences
 				
@@ -288,9 +324,12 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					
 					i++;
 				}
+				
+				newCharts.add(new MultipleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, data));
 			}
 		}
 
+		logger.debug("setting new charts");
 		charts.setCharts(newCharts);
 	}
 }

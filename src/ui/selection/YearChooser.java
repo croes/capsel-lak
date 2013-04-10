@@ -1,6 +1,5 @@
 package ui.selection;
 
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -19,7 +18,6 @@ public class YearChooser extends JPanel {
 	private static final long serialVersionUID = 161739879163203879L;
 
 	private static final Logger dataLogger = LogManager.getLogger(Data.class);
-	private static final Color backgroundColor = Colors.getColor(0xD0, 0xD0, 0xFF);
 	private class Data extends JLabel implements MouseListener {
 		
 		private static final long serialVersionUID = 7852664301535798611L;
@@ -34,13 +32,11 @@ public class YearChooser extends JPanel {
 			selected = false;
 			
 			setOpaque(false);
-			setBackground(backgroundColor);
+			setBackground(Colors.highlightColor);
+
+			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 		
-		private void setHoverBorder() {
-			setBorder(BorderFactory.createLineBorder(backgroundColor));
-		}
-
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			// only left clicks
@@ -68,13 +64,13 @@ public class YearChooser extends JPanel {
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			dataLogger.trace("mouseEntered @ year %d", year);
-			setHoverBorder();
+			setBorder(BorderFactory.createLineBorder(Colors.highlightColor, 1));
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
 			dataLogger.trace("mouseExited @ year %d", year);
-			setBorder(BorderFactory.createEmptyBorder());
+			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 	}
 	
