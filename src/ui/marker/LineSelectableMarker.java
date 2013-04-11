@@ -1,4 +1,4 @@
-package marker;
+package ui.marker;
 
 import de.fhpotsdam.unfolding.marker.Marker;
 

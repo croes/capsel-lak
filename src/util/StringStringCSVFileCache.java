@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-class StringStringCSVFileCache extends CSVFileCache {
+public class StringStringCSVFileCache extends CSVFileCache {
 	
 	private Map<String, String> strings;
 	
@@ -18,8 +18,12 @@ class StringStringCSVFileCache extends CSVFileCache {
 	}
 
 	@Override
-	protected void processLine(CSVLine line) {
-		strings.put(line.getString(0), line.getString(1));
+	protected final void processLine(CSVLine line) {
+		processLine(line.getString(0), line.getString(1));
+	}
+	
+	protected void processLine(String key, String value) {
+		strings.put(key, value);
 	}
 	
 	public boolean hasKey(String key) {
@@ -30,7 +34,7 @@ class StringStringCSVFileCache extends CSVFileCache {
 		return strings.get(key);
 	}
 	
-	public void put(String key, String val) {
+	protected void put(String key, String val) {
 		strings.put(key, val);
 		
 		CSVLine line = new CSVLine();

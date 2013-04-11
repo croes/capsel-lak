@@ -3,16 +3,16 @@ package map;
 import java.io.IOException;
 import java.util.List;
 
-import marker.EdgeMarker;
-import marker.ProxyMarker;
-import marker.SelectableMarkerManager;
-import marker.SwitchableNamedMarker;
 
 import log.LogManager;
 import log.Logger;
 
 import processing.core.PApplet;
 import rdf.RDFModel;
+import ui.marker.EdgeMarker;
+import ui.marker.ProxyMarker;
+import ui.marker.SelectableMarkerManager;
+import ui.marker.SwitchableNamedMarker;
 import util.StringUtil;
 import util.location.CountryLocationCache;
 import util.location.LocationCache;
@@ -75,10 +75,13 @@ public class SwitchingLAKMap extends PApplet {
 		Ani.init(this);
 
 		// create location cache
-		logger.debug("Creating LocationCaches");
 		try {
+			logger.debug("Creating LocationCaches");
 			countryLocationCache = new CountryLocationCache("data/countries.csv");
 			universityLocationCache = new OrganizationLocationCache("data/organisations.csv");
+
+			logger.debug("Creating OrganizationCountryMap");
+			orgCountryMap = new OrganizationCountryMap("data/organizations_countries.csv");
 		} catch (IOException e) {
 			logger.fatal("Location cache file produced an IO Error");
 			logger.catching(e);
@@ -86,8 +89,6 @@ public class SwitchingLAKMap extends PApplet {
 			exit();
 		}
 
-		logger.debug("Creating OrganizationCountryMap");
-		orgCountryMap = OrganizationCountryMap.getInstance();
 
 		logger.debug("Creating map");
 		map = new UnfoldingMap(this);

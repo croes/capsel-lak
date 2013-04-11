@@ -17,19 +17,25 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 
 /**
- * FIXME K.U.Leuven and KULeuven are both changed to KU Leuven by StringUtil, resulting in wrong results !!!
+ * FIXME K.U.Leuven and KULeuven are both changed to KU Leuven by StringUtil,
+ * resulting in wrong results !!!
  */
-public class ChartSelectionController implements ChartSelectionPanel.DataProvider {
+public class DataProvider implements ChartSelectionPanel.DataProvider, MapController.DataProvider {
 
-	private static final Logger logger = LogManager.getLogger(ChartSelectionController.class);
+	private static final Logger logger = LogManager.getLogger(DataProvider.class);
 
-	private static class ConfYearCouple {
-		private final String conference;
-		private final int year;
+	protected static class ConfYearCouple {
+		protected final String conference;
+		protected final int year;
 
 		public ConfYearCouple(String conference, int year) {
 			this.conference = conference;
 			this.year = year;
+		}
+		
+		public ConfYearCouple(String conferenceAcronym) {
+			this.conference = conferenceAcronym.replaceAll("[0-9]{4}$", "");
+			this.year = Integer.valueOf(conferenceAcronym.substring(conference.length()), 10);
 		}
 
 		@Override
@@ -52,9 +58,9 @@ public class ChartSelectionController implements ChartSelectionPanel.DataProvide
 		}
 	}
 
-	private static class ConfYearOrgTriple extends ConfYearCouple {
+	protected static class ConfYearOrgTriple extends ConfYearCouple {
 
-		private final String organization;
+		protected final String organization;
 
 		public ConfYearOrgTriple(String organization, String conference, int year) {
 			super(conference, year);
@@ -84,13 +90,13 @@ public class ChartSelectionController implements ChartSelectionPanel.DataProvide
 
 	}
 
-	private final SortedSet<String> conferences;
+	protected final SortedSet<String> conferences;
 
-	private final Map<ConfYearCouple, Double> conferenceData;
-	private final Map<ConfYearCouple, SortedSet<String>> conferenceOrganizationMap;
-	private final Map<ConfYearOrgTriple, Double> organizationData;
+	protected final Map<ConfYearCouple, Double> conferenceData;
+	protected final Map<ConfYearCouple, SortedSet<String>> conferenceOrganizationMap;
+	protected final Map<ConfYearOrgTriple, Double> organizationData;
 
-	public ChartSelectionController() {
+	public DataProvider() {
 		conferences = new TreeSet<>();
 		conferenceData = new HashMap<>();
 		organizationData = new HashMap<>();

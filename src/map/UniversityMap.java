@@ -2,15 +2,15 @@ package map;
 
 import java.io.IOException;
 
-import marker.EdgeMarker;
-import marker.NamedMarker;
-import marker.ProxyMarker;
 
 import log.LogManager;
 import log.Logger;
 
 import processing.core.PApplet;
 import rdf.RDFModel;
+import ui.marker.EdgeMarker;
+import ui.marker.NamedMarker;
+import ui.marker.ProxyMarker;
 import util.StringUtil;
 import util.location.LocationCache;
 import util.location.OrganizationLocationCache;

@@ -4,11 +4,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import marker.NamedMarker;
-
-import log.Logger;
 import log.LogManager;
-
+import log.Logger;
 import util.StringUtil;
 
 import com.hp.hpl.jena.query.Query;
@@ -149,6 +146,27 @@ public class RDFModel {
 		+		"?member foaf:based_near ?country"
 		+		"}"
 				);
+	}
+	
+	public static String getCountryOfOrganization(String organization) {
+		ResultSet result = query(
+				"SELECT DISTINCT ?country \n"
+				+ "WHERE { "
+				+ "?org rdf:type foaf:Organization . "
+				+ "?org foaf:name \"" + organization + "\" . "
+				+ "?org foaf:member ?member . "
+				+ "?member foaf:based_near ?country"
+				+ "}"
+				);
+		
+		if (!result.hasNext()) return null;
+		String country = StringUtil.parseCountryURL(result.next().getResource("country"));
+		
+		if (result.hasNext()) {
+			logger.warn("#getCountryOfOrganization(%s) has more results than just %s", organization, country);
+		}
+		
+		return country;
 	}
 	
 	public static ResultSet getAllOrganisationPairsThatWroteAPaperTogetherFromGivenConference(String confAcronym){

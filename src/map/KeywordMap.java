@@ -5,9 +5,9 @@ import java.util.List;
 
 import log.LogManager;
 import log.Logger;
-import marker.NamedMarker;
 import processing.core.PApplet;
 import rdf.RDFModel;
+import ui.marker.NamedMarker;
 import util.StringUtil;
 import util.location.LocationCache;
 import util.location.OrganizationLocationCache;

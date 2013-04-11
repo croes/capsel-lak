@@ -256,7 +256,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 			i++;
 		}
 		
-		return new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data);
+		return new MultipleConferenceSingleYearBarChart(organization, Y_AXIS_TITLE, data);
 	}
 	
 	private AbstractBarChart createMCMYGraph(String organization, Collection<String> conferences, Collection<Integer> years) {
