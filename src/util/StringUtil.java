@@ -42,6 +42,16 @@ public class StringUtil {
 	public static String parseCountryURL(Resource s) {
 		return parseCountryURL(String.valueOf(s));
 	}
+	
+	public static String getInitials(String longString){
+		StringBuilder builder = new StringBuilder();
+		String[] words = longString.split(" ");
+		for (int i = 0; i < words.length; i++) {
+			if(words[i].length() > 0)
+				builder.append(words[i].charAt(0));
+		}
+		return builder.toString();
+	}
 
 	private StringUtil() {
 		// defeats instantiation
