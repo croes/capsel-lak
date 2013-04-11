@@ -32,3 +32,10 @@
 - - Hoe werk je samen, hoe wordt het werk verdeeld?
 - - Technische problemen gehad? 
 - - Hoe wil je deze visualisatie(s) nu evalueren? (gewoon op de conferentie staan, maar wat gaat ge die mensen dan vragen?)
+
+
+## TODO
+- Title van barchart wijzigen naar volledige titel als hover
+- Als hover over barchart, de universiteit op de map openen
+- KeywordMap bugs eruithalen
+- Edges toevoegen aan lakmap
