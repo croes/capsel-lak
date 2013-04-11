@@ -78,7 +78,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	private final Map<String, ProxyMarker<Node>> nodes;
 	private final Map<StringCouple, ProxyMarker<Edge>> edges;
 
-	private final TaskManager mouseMovedTaskManager;
+	private final TaskManager mapTaskManager;
 
 	protected final DataProvider dataProvider;
 
@@ -88,7 +88,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		dataProvider = data;
 		this.drawFPS = drawFPS;
 
-		mouseMovedTaskManager = new TaskManager("MouseMoved", 1);
+		mapTaskManager = new TaskManager("MapTaskManager", 1);
 
 		nodeMarkerManager = new SelectableMarkerManager<>();
 		edgeMarkerManager = new SelectableMarkerManager<>();
@@ -100,7 +100,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	@Override
 	public void setup() {
 		logger.debug("Setting up AbstractLAKMap");
-		
+
 		addComponentListener(this);
 
 		frameRate(60);
@@ -119,9 +119,15 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		map.addMarkerManager(edgeMarkerManager);
 		map.addMarkerManager(nodeMarkerManager);
 
-		logger.debug("Populating the map");
-		createAllNodeMarkers();
-		createAllEdgeMarkers();
+		logger.debug("Scheduling task to populate the map");
+		mapTaskManager.schedule(new Task("PopulateMap") {
+			@Override
+			public void execute() throws Throwable {
+				logger.debug("Populating the map");
+				createAllNodeMarkers();
+				createAllEdgeMarkers();
+			}
+		});
 
 		logger.debug("AbstractLAKMap set up");
 	}
@@ -186,7 +192,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	protected final void storeEdgeMarker(String from, String to, Edge marker) {
 		storeEdgeMarker(new StringCouple(from, to), marker);
 	}
-	
+
 	protected final void storeEdgeMarker(StringCouple locs, Edge marker) {
 		ProxyMarker<Edge> proxy = edgeMarkerManager.addOriginalMarker(marker);
 		edges.put(locs, proxy);
@@ -201,11 +207,11 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 			m.setHidden(true);
 		}
 	}
-	
+
 	protected ProxyMarker<Edge> getEdgeMarkerForNames(String name1, String name2) {
 		return getEdgeMarkerForNames(new StringCouple(name1, name2));
 	}
-	
+
 	protected ProxyMarker<Edge> getEdgeMarkerForNames(StringCouple names) {
 		return edges.get(names);
 	}
@@ -225,7 +231,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	public void mouseMoved() {
 		final List<? extends Marker> hitEdgeMarkers = edgeMarkerManager.getHitMarkers(mouseX, mouseY);
 		final List<? extends Marker> hitNodeMarkers = nodeMarkerManager.getHitMarkers(mouseX, mouseY);
-		mouseMovedTaskManager.schedule(new Task("mouseMoved") {
+		mapTaskManager.schedule(new Task("mouseMoved") {
 			@Override
 			public void execute() throws Throwable {
 
