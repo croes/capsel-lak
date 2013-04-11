@@ -142,12 +142,13 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 			return unselected.add(m);
 	}
 	
-	public boolean addOriginalMarker(E marker) {
+	public ProxyMarker<E> addOriginalMarker(E marker) {
 		MarkerWrapper m = new MarkerWrapper(marker);
 		if (m.isSelected())
-			return selected.add(m);
+			selected.add(m);
 		else
-			return unselected.add(m);
+			unselected.add(m);
+		return m;
 	}
 
 	@Override

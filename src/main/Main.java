@@ -76,6 +76,8 @@ public class Main {
 		frame.setSize(1200, 800);
 		RefineryUtilities.centerFrameOnScreen(frame);
 		frame.setVisible(true);
+		
+		frame.setResizable(false);
 
 		// init processing
 		map.init();

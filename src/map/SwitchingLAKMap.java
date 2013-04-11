@@ -81,7 +81,7 @@ public class SwitchingLAKMap extends PApplet {
 			universityLocationCache = new OrganizationLocationCache("data/organisations.csv");
 
 			logger.debug("Creating OrganizationCountryMap");
-			orgCountryMap = new OrganizationCountryMap("data/organizations_countries.csv");
+			orgCountryMap = new OrganizationCountryMap("data/organisations_countries.csv");
 		} catch (IOException e) {
 			logger.fatal("Location cache file produced an IO Error");
 			logger.catching(e);
