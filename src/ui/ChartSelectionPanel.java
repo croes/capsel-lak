@@ -30,12 +30,14 @@ import ui.selection.ColoredItemChooser;
 import ui.selection.ColoredSelectionChangedListener;
 import ui.selection.YearChooser;
 import ui.selection.YearSelectionListener;
+import util.task.Task;
+import util.task.TaskManager;
 
 public class ChartSelectionPanel extends JPanel implements YearSelectionListener, ColoredSelectionChangedListener,
 		BarMouseListener {
 
 	private static final long serialVersionUID = -6697140724684998536L;
-	
+
 	private static final Logger logger = LogManager.getLogger(ChartSelectionPanel.class);
 
 	public static final String Y_AXIS_TITLE = "papers";
@@ -56,7 +58,9 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		SortedSet<String> getOrganizationsForConference(String conference, int year);
 
 		SortedSet<String> getOrganizationsForConferences(Collection<String> conferences, Collection<Integer> years);
+
 		SortedSet<String> getOrganizationsForConferences(Collection<String> conferences, int year);
+
 		SortedSet<String> getOrganizationsForConferences(String conference, Collection<Integer> years);
 	}
 
@@ -91,13 +95,13 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	}
 
 	private static class MCMYData extends MultipleConferenceMultipleYearBarChart.Data {
-		
+
 		static class Year extends MultipleConferenceMultipleYearBarChart.Data.Year {
 			public Year(int year, double data) {
 				super(year, data);
 			}
 		}
-		
+
 		public MCMYData(String conference, Color color, Year[] years) {
 			super(conference, color, years);
 		}
@@ -113,7 +117,11 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 	private final SortedSet<String> selectedConferences;
 	private final SortedSet<Integer> selectedYears;
-	
+
+	private final TaskManager updateTaskManager;
+	private volatile transient boolean updatePending;
+	private final Object lock;
+
 	public ChartSelectionPanel(DataProvider data) {
 		this(data, true);
 	}
@@ -139,16 +147,17 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		subPanel.add(Box.createRigidArea(spacerDimension));
 		subPanel.add(years);
 		subPanel.add(Box.createRigidArea(spacerDimension));
-		
+
 		setLayout(new BorderLayout());
 		{
 			JPanel subPanelContainer = new JPanel();
-			subPanelContainer.setLayout(new BoxLayout(subPanelContainer, horizontal ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS));
-			
+			subPanelContainer.setLayout(new BoxLayout(subPanelContainer, horizontal ? BoxLayout.Y_AXIS
+					: BoxLayout.X_AXIS));
+
 			subPanelContainer.add(horizontal ? Box.createVerticalGlue() : Box.createHorizontalGlue());
 			subPanelContainer.add(subPanel);
 			subPanelContainer.add(horizontal ? Box.createVerticalGlue() : Box.createHorizontalGlue());
-			
+
 			add(subPanelContainer, horizontal ? BorderLayout.WEST : BorderLayout.NORTH);
 		}
 		add(charts, BorderLayout.CENTER);
@@ -157,12 +166,16 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 		selectedConferences = new TreeSet<>();
 		selectedYears = new TreeSet<>();
+
+		updateTaskManager = new TaskManager("ChartUpdater", 1);
+		updatePending = false;
+		lock = new Object();
 	}
-	
+
 	public void addListener(Listener listener) {
 		listeners.add(Listener.class, listener);
 	}
-	
+
 	public void removeListener(Listener listener) {
 		listeners.remove(Listener.class, listener);
 	}
@@ -175,7 +188,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		}
 
 		selectedConferences.add(conference);
-		drawGraphs();
+		scheduleDrawGraphs();
 	}
 
 	@Override
@@ -186,12 +199,12 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		}
 
 		selectedConferences.remove(conference);
-		drawGraphs();
+		scheduleDrawGraphs();
 	}
 
 	@Override
 	public void onColorChanged(String conference, Color newColor) {
-		drawGraphs();
+		scheduleDrawGraphs();
 	}
 
 	@Override
@@ -202,7 +215,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		}
 
 		selectedYears.add(year);
-		drawGraphs();
+		scheduleDrawGraphs();
 	}
 
 	@Override
@@ -213,7 +226,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		}
 
 		selectedYears.remove(year);
-		drawGraphs();
+		scheduleDrawGraphs();
 	}
 
 	@Override
@@ -230,21 +243,22 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	public void mouseClick(BarMouseEvent event) {
 		// TODO do something with this?
 	}
-	
+
 	private AbstractBarChart createSCMYGraph(String organization, String conference, Collection<Integer> years) {
 		SCMYData[] data = new SCMYData[years.size()];
-		
+
 		int i = 0;
 		for (int year : years) {
 			data[i] = new SCMYData(year, dataProvider.getOrganizationData(conference, organization, year));
-			
+
 			i++;
 		}
-		
-		return new SingleConferenceMultipleYearBarChart(organization, Y_AXIS_TITLE, conferences.getColor(conference), data);
+
+		return new SingleConferenceMultipleYearBarChart(organization, Y_AXIS_TITLE, conferences.getColor(conference),
+				data);
 
 	}
-	
+
 	private AbstractBarChart createMCSYGraph(String organization, Collection<String> conferences, int year) {
 		MCSYData[] data = new MCSYData[conferences.size()];
 
@@ -255,37 +269,56 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 			i++;
 		}
-		
+
 		return new MultipleConferenceSingleYearBarChart(organization, Y_AXIS_TITLE, data);
 	}
-	
-	private AbstractBarChart createMCMYGraph(String organization, Collection<String> conferences, Collection<Integer> years) {
+
+	private AbstractBarChart createMCMYGraph(String organization, Collection<String> conferences,
+			Collection<Integer> years) {
 		MCMYData[] data = new MCMYData[conferences.size()];
 		int nbYears = years.size();
-		
+
 		int i = 0;
 		for (String conference : conferences) {
-			
+
 			MCMYData.Year[] yearDatas = new MCMYData.Year[nbYears];
-			
+
 			int j = 0;
 			for (int year : years) {
 				yearDatas[j] = new MCMYData.Year(year, dataProvider.getOrganizationData(conference, organization, year));
-				
+
 				j++;
 			}
-			
+
 			data[i] = new MCMYData(conference, this.conferences.getColor(conference), yearDatas);
-			
+
 			i++;
 		}
-		
+
 		return new MultipleConferenceMultipleYearBarChart(organization, Y_AXIS_TITLE, data);
+	}
+
+	private void scheduleDrawGraphs() {
+		synchronized (lock) {
+			if (updatePending)
+				return;
+			updatePending = true;
+		}
+
+		updateTaskManager.schedule(new Task("drawGraphs") {
+			@Override
+			public void execute() throws Throwable {
+				synchronized(lock) {
+					updatePending = false;
+				}
+				drawGraphs();
+			}
+		});
 	}
 
 	private void drawGraphs() {
 		logger.debug("drawGraphs, nb years: %d, nb conferences: %d", selectedYears.size(), selectedConferences.size());
-		
+
 		if (selectedYears.isEmpty() && selectedConferences.isEmpty()) {
 			logger.debug("no charts to be shown, clearing panel");
 			charts.setCharts(null);
@@ -293,13 +326,13 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		}
 
 		List<AbstractBarChart> newCharts = new LinkedList<>();
-		
+
 		final SortedSet<String> selectedConferences;
 		if (this.selectedConferences.isEmpty())
 			selectedConferences = dataProvider.getConferences();
 		else
 			selectedConferences = this.selectedConferences;
-		
+
 		final SortedSet<Integer> selectedYears;
 		if (this.selectedYears.isEmpty()) {
 			selectedYears = new TreeSet<>();
@@ -340,55 +373,56 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 					i++;
 				}
-				
+
 				newCharts.add(new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data));
-				
+
 				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year))
 					newCharts.add(createMCSYGraph(org, selectedConferences, year));
 			}
 		} else {
 			if (selectedConferences.size() == 1) {
 				// multiple years, one conference
-				
+
 				String conference = selectedConferences.first();
 				SCMYData[] data = new SCMYData[selectedYears.size()];
-				
+
 				int i = 0;
 				for (int year : selectedYears) {
 					data[i] = new SCMYData(year, dataProvider.getConferenceData(conference, year));
-					
+
 					i++;
 				}
-				
-				newCharts.add(new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences.getColor(conference), data));
-				
+
+				newCharts.add(new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences
+						.getColor(conference), data));
+
 				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears))
 					newCharts.add(createSCMYGraph(org, conference, selectedYears));
 			} else {
 				// multiple years, multiple conferences
-				
+
 				MCMYData[] data = new MCMYData[selectedConferences.size()];
 				int nbYears = selectedYears.size();
-				
+
 				int i = 0;
 				for (String conference : selectedConferences) {
-					
+
 					MCMYData.Year[] years = new MCMYData.Year[nbYears];
-					
+
 					int j = 0;
 					for (int year : selectedYears) {
 						years[j] = new MCMYData.Year(year, dataProvider.getConferenceData(conference, year));
-						
+
 						j++;
 					}
-					
+
 					data[i] = new MCMYData(conference, conferences.getColor(conference), years);
-					
+
 					i++;
 				}
-				
+
 				newCharts.add(new MultipleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, data));
-				
+
 				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears))
 					newCharts.add(createMCMYGraph(org, selectedConferences, selectedYears));
 			}

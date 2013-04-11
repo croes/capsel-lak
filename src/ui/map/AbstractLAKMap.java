@@ -1,5 +1,7 @@
 package ui.map;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,7 @@ import log.Logger;
 import processing.core.PApplet;
 import ui.marker.EdgeMarker;
 import ui.marker.NamedMarker;
+import ui.marker.ProxyMarker;
 import ui.marker.SelectableMarkerManager;
 import util.StringCouple;
 import util.task.Task;
@@ -22,7 +25,8 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
 
-public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends EdgeMarker<Node>> extends PApplet {
+public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends EdgeMarker<Node>> extends PApplet implements
+		ComponentListener {
 
 	private static final long serialVersionUID = 7338377844735009681L;
 
@@ -62,7 +66,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 		Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym,
 				Map<StringCouple, Integer> data);
-		
+
 		Map<StringCouple, Integer> getAllOrganizationCooperationData();
 	}
 
@@ -70,9 +74,9 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 	protected final SelectableMarkerManager<Node> nodeMarkerManager;
 	protected final SelectableMarkerManager<Edge> edgeMarkerManager;
-	
-	private final Map<String, Node> nodes;
-	private final Map<StringCouple, Edge> edges;
+
+	private final Map<String, ProxyMarker<Node>> nodes;
+	private final Map<StringCouple, ProxyMarker<Edge>> edges;
 
 	private final TaskManager mouseMovedTaskManager;
 
@@ -88,7 +92,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 		nodeMarkerManager = new SelectableMarkerManager<>();
 		edgeMarkerManager = new SelectableMarkerManager<>();
-		
+
 		nodes = new HashMap<>();
 		edges = new HashMap<>();
 	}
@@ -96,8 +100,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	@Override
 	public void setup() {
 		logger.debug("Setting up AbstractLAKMap");
+		
+		addComponentListener(this);
 
-		frameRate(30);
+		frameRate(60);
 		smooth();
 
 		// init LibAni
@@ -144,10 +150,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		fill(0xFFEEEEEE);
 		text(s, 15, 20);
 	}
-	
+
 	protected final void storeNodeMarker(Node marker) {
-		nodeMarkerManager.addOriginalMarker(marker);
-		nodes.put(marker.getName(), marker);
+		ProxyMarker<Node> proxy = nodeMarkerManager.addOriginalMarker(marker);
+		nodes.put(marker.getName(), proxy);
 	}
 
 	protected abstract void createAllNodeMarkers();
@@ -173,29 +179,35 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	/**
 	 * Find the marker with a given name
 	 */
-	protected Node getNodeMarkerWithName(String name) {
+	protected ProxyMarker<Node> getNodeMarkerWithName(String name) {
 		return nodes.get(name);
 	}
-	
+
 	protected final void storeEdgeMarker(String from, String to, Edge marker) {
-		edgeMarkerManager.addOriginalMarker(marker);
-		edges.put(new StringCouple(from, to), marker);
+		storeEdgeMarker(new StringCouple(from, to), marker);
+	}
+	
+	protected final void storeEdgeMarker(StringCouple locs, Edge marker) {
+		ProxyMarker<Edge> proxy = edgeMarkerManager.addOriginalMarker(marker);
+		edges.put(locs, proxy);
 	}
 
 	protected abstract void createAllEdgeMarkers();
-	
-	protected void showAllEdgeMarkers() {
-		// TODO revert back to the data of all conferences if needed
-		
-		for (Marker m : edgeMarkerManager) {
-			m.setHidden(false);
-		}
-	}
-	
+
+	protected abstract void showAllEdgeMarkers();
+
 	protected void hideAllEdgeMarkers() {
 		for (Marker m : edgeMarkerManager) {
 			m.setHidden(true);
 		}
+	}
+	
+	protected ProxyMarker<Edge> getEdgeMarkerForNames(String name1, String name2) {
+		return getEdgeMarkerForNames(new StringCouple(name1, name2));
+	}
+	
+	protected ProxyMarker<Edge> getEdgeMarkerForNames(StringCouple names) {
+		return edges.get(names);
 	}
 
 	public void showAllConferences() {
@@ -228,4 +240,25 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 		});
 	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+		map.mapDisplay.resize(getWidth(), getHeight());
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+		// NOP
+	}
+
+	@Override
+	public void componentShown(ComponentEvent e) {
+		// NOP
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {
+		// NOP
+	}
+
 }

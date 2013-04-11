@@ -16,6 +16,7 @@ import util.location.CountryLocationCache;
 import util.location.OrganizationCountryMap;
 import util.location.OrganizationLocationCache;
 
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 
 import de.fhpotsdam.unfolding.geo.Location;
@@ -27,6 +28,8 @@ public class MapDataProvider extends DataProvider implements AbstractLAKMap.Data
 	private final OrganizationCountryMap organizationCountryMap;
 
 	private final SortedSet<String> allOrganizations;
+	private final Map<StringCouple, Integer> allOrganizationCooperation;
+	private final Map<String, Map<StringCouple, Integer>> organizationCooperationForConferenceAcronyms;
 
 	public MapDataProvider(String organizationLocationFile, String countryLocationFile, String organizationCountryFile)
 			throws IOException {
@@ -35,6 +38,8 @@ public class MapDataProvider extends DataProvider implements AbstractLAKMap.Data
 		organizationCountryMap = new OrganizationCountryMap(organizationCountryFile);
 		
 		allOrganizations = new TreeSet<>();
+		allOrganizationCooperation = new HashMap<>();
+		organizationCooperationForConferenceAcronyms = new HashMap<>();
 	}
 
 	@Override
@@ -102,7 +107,13 @@ public class MapDataProvider extends DataProvider implements AbstractLAKMap.Data
 			organizationCooperation = new HashSet<>();
 		}
 		
-		// TODO
+		if (!organizationCooperationForConferenceAcronyms.containsKey(conferenceAcronym)) {
+			synchronized (organizationCooperationForConferenceAcronyms) {
+				loadConferenceOrganizationCooperationData(conferenceAcronym);
+			}
+		}
+		
+		organizationCooperation.addAll(organizationCooperationForConferenceAcronyms.get(conferenceAcronym).keySet());
 		
 		return organizationCooperation;
 	}
@@ -115,18 +126,83 @@ public class MapDataProvider extends DataProvider implements AbstractLAKMap.Data
 	@Override
 	public Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym,
 			Map<StringCouple, Integer> data) {
-		if (data == null) {
-			data = new HashMap<>();
+		if (!organizationCooperationForConferenceAcronyms.containsKey(conferenceAcronym)) {
+			synchronized (organizationCooperationForConferenceAcronyms) {
+				loadConferenceOrganizationCooperationData(conferenceAcronym);
+			}
 		}
 		
-		// TODO 
+		final Map<StringCouple, Integer> conferenceData = organizationCooperationForConferenceAcronyms.get(conferenceAcronym);
+		
+		if (data == null) {
+			return new HashMap<>(conferenceData);
+		}
+		
+		for (StringCouple conferenceCouple : conferenceData.keySet()) {
+			if (data.containsKey(conferenceCouple)) {
+				data.put(conferenceCouple, data.get(conferenceCouple) + conferenceData.get(conferenceCouple));
+			} else {
+				data.put(conferenceCouple, conferenceData.get(conferenceCouple));
+			}
+		}
 		
 		return data;
 	}
 
 	@Override
 	public Map<StringCouple, Integer> getAllOrganizationCooperationData() {
-		// TODO Auto-generated method stub
-		return null;
+		if (allOrganizationCooperation.isEmpty()) {
+			synchronized (allOrganizationCooperation) {
+				if (!allOrganizationCooperation.isEmpty())
+					return allOrganizationCooperation;
+				
+				Map<StringCouple, Integer> newAllOrganizationCooperations = new HashMap<>();
+				
+				ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogether();
+				
+				QuerySolution sol;
+				while (rs.hasNext()) {
+					sol = rs.next();
+					
+					String orgName = StringUtil.getString(sol.getLiteral("orgName"));
+					String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
+					
+					if (orgName == null || otherOrgName == null)
+						continue;
+					
+					int coopCount = sol.getLiteral("coopCount").getInt();
+					
+					newAllOrganizationCooperations.put(new StringCouple(orgName, otherOrgName), coopCount);
+				}
+				
+				allOrganizationCooperation.putAll(newAllOrganizationCooperations);
+			}
+		}
+
+		return allOrganizationCooperation;
+	}
+	
+	private void loadConferenceOrganizationCooperationData(String conferenceAcronym) {
+		if (organizationCooperationForConferenceAcronyms.containsKey(conferenceAcronym))
+			return;
+		
+		Map<StringCouple, Integer> newConferenceData = new HashMap<>();
+		ResultSet rs = RDFModel.getAllOrganisationPairsThatWroteAPaperTogetherFromGivenConference(conferenceAcronym);
+
+		QuerySolution sol;
+		while (rs.hasNext()) {
+			sol = rs.next();
+			String orgName = StringUtil.getString(sol.getLiteral("orgName"));
+			String otherOrgName = StringUtil.getString(sol.getLiteral("otherOrgName"));
+			
+			if (orgName == null || otherOrgName == null)
+				continue;
+			
+			int coopCount = sol.getLiteral("coopCount").getInt();
+			
+			newConferenceData.put(new StringCouple(orgName, otherOrgName), coopCount);
+		}
+		
+		organizationCooperationForConferenceAcronyms.put(conferenceAcronym, newConferenceData);
 	}
 }

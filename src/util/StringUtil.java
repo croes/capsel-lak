@@ -20,17 +20,17 @@ public class StringUtil {
 
 	public static String getString(String s) {
 		if (s == null || (s = s.trim()).length() == 0)
-			return "";
+			return s;
 
-		return duplicates.hasKey(s) ? duplicates.get(s) : s;
+		return duplicates.hasKey(s) ? duplicates.get(s).trim() : s.trim();
 	}
 	
 	public static String getString(Literal l) {
-		return getString(l == null ? "" : l.getString());
+		return getString(l == null ? null : l.getString());
 	}
 	
 	public static String getString(Statement s) {
-		return getString(s == null ? "" : s.getString());
+		return getString(s == null ? null : s.getString());
 	}
 	
 	public static String parseCountryURL(String countryURL) {

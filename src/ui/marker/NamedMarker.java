@@ -32,6 +32,7 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 	protected final boolean animated;
 
 	protected float current;
+	protected float opacity;
 
 	protected State state;
 
@@ -48,9 +49,28 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		// make the marker black
 		color = highlightColor = highlightStrokeColor = strokeColor = 0;
 
+		opacity = 1;
+
 		state = State.POINT;
 		current = 0;
 		countSelectedLines = 0;
+	}
+
+	public void setHidden(boolean hidden) {
+		if (hidden == isHidden()) {
+			super.setHidden(hidden);
+			return;
+		}
+
+		super.setHidden(hidden);
+		if (!animated)
+			return;
+
+		if (hidden)
+			// delay
+			Ani.to(this, ANI_DURATION, ANI_DURATION, "opacity", 0, Easing.QUAD_OUT).start();
+		else
+			Ani.to(this, ANI_DURATION, "opacity", 1, Easing.QUAD_IN).start();
 	}
 
 	public void setSelected(boolean selected) {
@@ -63,12 +83,12 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		super.setSelected(selected);
 		onSelectedUpdated();
 	}
-	
+
 	public String getText() {
 		return getName();
 	}
 
-	private void onSelectedUpdated() {
+	protected void onSelectedUpdated() {
 		boolean selected = this.selected || (countSelectedLines > 0);
 
 		if (!animated) {
@@ -95,10 +115,19 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 	}
 
 	public void draw(PGraphics pg, float x, float y) {
-		if (isHidden())
+		if (opacity == 0)
 			return;
 		if (state == State.POINT) {
-			super.draw(pg, x, y);
+			pg.pushStyle();
+
+			pg.strokeWeight(strokeWeight);
+			pg.fill(0, 0, 0, opacity * 255);
+			pg.stroke(0, 0, 0, opacity * 255);
+
+			pg.ellipse((int) x, (int) y, radius, radius);
+
+			pg.popStyle();
+
 			return;
 		}
 
@@ -110,8 +139,8 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		float phiStart = getArcStart(), phiEnd = getArcEnd();
 		String str = getText();
 		float textWidth = pg.textWidth(str);
-		float textAlpha = getTextAlpha();
-		float overlayAlpha = getOverlayAlpha();
+		float textAlpha = opacity * getTextAlpha();
+		float overlayAlpha = opacity * getOverlayAlpha();
 
 		// draw a semi-transparent circle
 
@@ -121,7 +150,7 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 
 		// draw the purple
 		Color4f circleColor = getCircleColor();
-		pg.stroke(circleColor.x, circleColor.y, circleColor.z, circleColor.w);
+		pg.stroke(circleColor.x, circleColor.y, circleColor.z, opacity * circleColor.w);
 		pg.strokeCap(PGraphics.SQUARE);
 		pg.noFill();
 
@@ -136,7 +165,7 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 
 		// draw the text
 		pg.fill(0, 0, 0, textAlpha * 255);
-		//pg.textSize(TEXT_HEIGHT);
+		// pg.textSize(TEXT_HEIGHT);
 		pg.text(str, x - textWidth / 2, y + 4);
 
 		pg.popStyle();
@@ -211,17 +240,23 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		Point2f pos = new Point2f(x, y);
 		return pos.distance(new Point2f(checkX, checkY)) < PApplet.abs(getRadius() - getStrokeWeight());
 	}
-	
-	@Override public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		
-		if (str.equals(o)) return true;
-		if (!(o instanceof NamedMarker)) return false;
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+
+		if (str.equals(o))
+			return true;
+		if (!(o instanceof NamedMarker))
+			return false;
 		return str.equals(((NamedMarker) o).str);
 	}
-	
-	@Override public int hashCode() {
+
+	@Override
+	public int hashCode() {
 		return str.hashCode();
 	}
 }
