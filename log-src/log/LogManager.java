@@ -17,12 +17,12 @@ public class LogManager {
 
 		try {
 			loggerClass = (Class<? extends Logger>) Class.forName("log.impl.Log4j2Logger");
-		} catch (ExceptionInInitializerError e) {
+		} catch (NoClassDefFoundError e) {
 			try {
 				loggerClass = (Class<? extends Logger>) Class.forName("log.impl.Log4jLogger");
 			} catch (ClassNotFoundException e1) {
 				throw new ExceptionInInitializerError(e1);
-			} catch (ExceptionInInitializerError e1) {
+			} catch (NoClassDefFoundError e1) {
 				throw new ExceptionInInitializerError(
 						"Failed to load Log4j2 and Log4j, please make sure that at least of of both is added to the classpath");
 			}
