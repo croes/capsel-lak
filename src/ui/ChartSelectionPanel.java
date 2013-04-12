@@ -3,6 +3,8 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Collection;
 import java.util.EventListener;
 import java.util.Iterator;
@@ -34,7 +36,7 @@ import util.task.Task;
 import util.task.TaskManager;
 
 public class ChartSelectionPanel extends JPanel implements YearSelectionListener, ColoredSelectionChangedListener,
-		BarMouseListener {
+		BarMouseListener, MouseListener {
 
 	private static final long serialVersionUID = -6697140724684998536L;
 
@@ -73,6 +75,10 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		void yearSelected(int year);
 
 		void yearUnselected(int year);
+		
+		void orgSelected(String university);
+		
+		void orgUnselected(String university);
 
 	}
 
@@ -358,8 +364,9 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					data[i] = new SCSYData(org, dataProvider.getOrganizationData(conference, org, year),
 							Color.lightGray);
 				}
-
-				newCharts.add(new SingleConferenceSingleYearBarChart(conference, Y_AXIS_TITLE, data));
+				AbstractBarChart chart = new SingleConferenceSingleYearBarChart(conference, Y_AXIS_TITLE, data);
+				chart.addMouseListener(this);
+				newCharts.add(chart);
 			} else {
 				// one year, multiple conferences
 
@@ -373,11 +380,15 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 					i++;
 				}
+				AbstractBarChart chart = new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data);
+				chart.addMouseListener(this);
+				newCharts.add(chart);
 
-				newCharts.add(new MultipleConferenceSingleYearBarChart("Total", Y_AXIS_TITLE, data));
-
-				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year))
-					newCharts.add(createMCSYGraph(org, selectedConferences, year));
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year)){
+					AbstractBarChart subChart = createMCSYGraph(org, selectedConferences, year); 
+					subChart.addMouseListener(this);
+					newCharts.add(subChart);
+				}
 			}
 		} else {
 			if (selectedConferences.size() == 1) {
@@ -393,11 +404,16 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					i++;
 				}
 
-				newCharts.add(new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences
-						.getColor(conference), data));
+				AbstractBarChart chart = new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences
+						.getColor(conference), data); 
+				chart.addMouseListener(this);
+				newCharts.add(chart);
 
-				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears))
-					newCharts.add(createSCMYGraph(org, conference, selectedYears));
+				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears)){
+					AbstractBarChart subChart = createSCMYGraph(org, conference, selectedYears);
+					subChart.addMouseListener(this);
+					newCharts.add(subChart);
+				}
 			} else {
 				// multiple years, multiple conferences
 
@@ -421,14 +437,54 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 					i++;
 				}
 
-				newCharts.add(new MultipleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, data));
+				AbstractBarChart chart = new MultipleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, data);
+				chart.addMouseListener(this);
+				newCharts.add(chart);
 
-				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears))
-					newCharts.add(createMCMYGraph(org, selectedConferences, selectedYears));
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears)){
+					AbstractBarChart subChart = createMCMYGraph(org, selectedConferences, selectedYears);
+					subChart.addMouseListener(this);
+					newCharts.add(subChart);
+				}
 			}
 		}
 
 		logger.debug("setting new charts");
 		charts.setCharts(newCharts);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		//NOP
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		AbstractBarChart enteredChart = (AbstractBarChart) e.getSource();
+		logger.debug("mouse entered: %s", enteredChart.getChart().getTitle().getText());
+		Listener[] listeners = this.listeners.getListeners(Listener.class);
+		for (Listener l : listeners) {
+			l.orgSelected(enteredChart.getFullTitle());
+		}
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		AbstractBarChart exitedChart = (AbstractBarChart) e.getSource();
+		logger.debug("mouse exited: %s",exitedChart.getChart().getTitle().getText());
+		Listener[] listeners = this.listeners.getListeners(Listener.class);
+		for (Listener l : listeners) {
+			l.orgUnselected(exitedChart.getFullTitle());
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		//NOP
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		//NOP
 	}
 }

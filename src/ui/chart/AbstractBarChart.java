@@ -1,11 +1,9 @@
 package ui.chart;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 
-import javax.swing.ToolTipManager;
 import javax.swing.event.EventListenerList;
 
 import log.LogManager;
@@ -164,6 +162,11 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 	@Override
 	public void chartMouseMoved(ChartMouseEvent event) {
+		BarMouseListener[] listeners = barEventListeners.getListeners(BarMouseListener.class);
+		/*for (BarMouseListener listener : listeners) {
+			listener.barChartMouseMoved(event);
+		}*/
+		
 		ChartEntity entity = event.getEntity();
 
 		if (highlightedEntity == entity)
@@ -176,7 +179,7 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 		CategoryItemEntity barEntity = (CategoryItemEntity) entity;
 
-		BarMouseListener[] listeners = barEventListeners.getListeners(BarMouseListener.class);
+		listeners = barEventListeners.getListeners(BarMouseListener.class);
 		if (listeners.length == 0) {
 			// no one to notify
 			highlightedEntity = barEntity;
@@ -299,5 +302,13 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 	public void mouseExited(MouseEvent arg0) {
 		getChart().setTitle(this.title);
 		super.mouseExited(arg0);
+	}
+	
+	public void barChartMouseMoved(ChartMouseEvent event) {
+		//NOP
+	}
+	
+	public String getFullTitle(){
+		return fullTitle;
 	}
 }

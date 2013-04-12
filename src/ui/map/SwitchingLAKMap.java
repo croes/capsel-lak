@@ -322,4 +322,14 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		return result;
 	}
 
+	@Override
+	public void selectOrg(String selectedUniversity) {
+		getNodeMarkerWithName(selectedUniversity).setSelected(true);
+	}
+	
+	@Override
+	public void unselectOrg(String unselectedUniversity) {
+		getNodeMarkerWithName(unselectedUniversity).setSelected(false);
+	}
+
 }

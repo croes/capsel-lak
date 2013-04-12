@@ -222,6 +222,9 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	}
 
 	public abstract void showConferences(Collection<String> selectedConferenceAcronyms);
+	
+	public abstract void selectOrg(String selectedUniversity);
+	public abstract void unselectOrg(String unselectedUniversity);
 
 	/**
 	 * Takes care of the hovering feature. When you hover over a marker, the

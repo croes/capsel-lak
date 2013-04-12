@@ -31,6 +31,8 @@ public class MapController implements ChartSelectionPanel.Listener {
 
 	private final Set<String> selectedConferences;
 	private final Set<Integer> selectedYears;
+	private String selectedUniversity;
+	private String unselectedUniversity;
 
 	private final Collection<String> selectedConferenceAcronyms;
 
@@ -48,6 +50,7 @@ public class MapController implements ChartSelectionPanel.Listener {
 		selectedConferences = new TreeSet<>();
 		selectedYears = new TreeSet<>();
 		selectedConferenceAcronyms = new LinkedList<>();
+		selectedUniversity = null;
 
 		mapTaskManager = new TaskManager("MapTaskManager", 1);
 		updatePending = false;
@@ -159,6 +162,30 @@ public class MapController implements ChartSelectionPanel.Listener {
 			logger.debug("Showing %d conference-year combinations", selectedConferenceAcronyms.size());
 			map.showConferences(selectedConferenceAcronyms);
 		}
+		
+		if(selectedUniversity != null){
+			logger.debug("Showing the selected university: %s \n", selectedUniversity);
+			map.selectOrg(selectedUniversity);
+		}
+		if(unselectedUniversity != null){
+			logger.debug("Unselecting the university: %s \n", unselectedUniversity);
+			map.unselectOrg(unselectedUniversity);
+		}
+	}
+
+	@Override
+	public void orgSelected(String university) {
+		selectedUniversity = university;
+		
+		scheduleUpdateMap();
+	}
+
+	@Override
+	public void orgUnselected(String university) {
+		selectedUniversity = null;
+		unselectedUniversity = university;
+		
+		scheduleUpdateMap();
 	}
 
 }
