@@ -12,7 +12,6 @@
 ## TODO
 
 - Verschillende kleuren voor edges/nodes?
-+ Meer filtering-opties (conferentie scheiden van jaar bvb) -> show multiple at the same time and differentiate between them with colors or shading. 
 - Add other visualisations (like number of authors/papers for that conference/year)
 - brushing and linking, link the different visualisations together (click on something on the 1 visualisation will change something in another visualisation)
 - Country locations veranderen naar hoofdstad, halen van de google maps api
@@ -35,8 +34,12 @@
 
 
 ## TODO
-+ Title van barchart wijzigen naar volledige titel als hover
-+ Als hover over barchart, de universiteit op de map openen
 - KeywordMap bugs eruithalen
 - Edges toevoegen aan lakmap
 - Treshold tussen country en organisation markers aanpassen
+
+
+## DONE
++ Title van barchart wijzigen naar volledige titel als hover
++ Als hover over barchart, de universiteit op de map openen
++ Meer filtering-opties (conferentie scheiden van jaar bvb) -> show multiple at the same time and differentiate between them with colors or shading. 
