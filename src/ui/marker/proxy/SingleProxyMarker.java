@@ -1,4 +1,4 @@
-package ui.marker;
+package ui.marker.proxy;
 
 import java.util.HashMap;
 
@@ -6,30 +6,38 @@ import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 
-public class ProxyMarker<E extends Marker> implements Marker {
+public class SingleProxyMarker<E extends Marker> implements ProxyMarker<E> {
 
 	protected final E original;
 
 	protected final Marker marker;
 
-	public ProxyMarker(E original) {
+	public SingleProxyMarker(E original) {
 		if (original == null)
 			throw new NullPointerException();
 		this.original = original;
 		marker = original;
 	}
 
-	public ProxyMarker(ProxyMarker<E> originalProxy) {
+	public SingleProxyMarker(SingleProxyMarker<E> originalProxy) {
 		if (originalProxy == null)
 			throw new NullPointerException();
 		original = originalProxy.getOriginal();
 		marker = originalProxy;
 	}
 
+	/* (non-Javadoc)
+	 * @see ui.marker.ProxyMarker#getMarker()
+	 */
+	@Override
 	public Marker getMarker() {
 		return marker;
 	}
 
+	/* (non-Javadoc)
+	 * @see ui.marker.ProxyMarker#getOriginal()
+	 */
+	@Override
 	public E getOriginal() {
 		return original;
 	}
@@ -131,7 +139,7 @@ public class ProxyMarker<E extends Marker> implements Marker {
 		if (getMarker().equals(o))
 			return true;
 
-		if (!(o instanceof ProxyMarker))
+		if (!(o instanceof SingleProxyMarker))
 			return false;
 		
 		ProxyMarker<?> other = (ProxyMarker<?>)o;
@@ -141,6 +149,25 @@ public class ProxyMarker<E extends Marker> implements Marker {
 	@Override
 	public int hashCode() {
 		return getOriginal().hashCode();
+	}
+
+	@Override
+	public Marker getMarker(int i) {
+		if (i == 0)
+			return getMarker();
+		throw new IllegalArgumentException();
+	}
+
+	@Override
+	public E getOriginal(int i) {
+		if (i == 0)
+			return getOriginal();
+		throw new IllegalArgumentException();
+	}
+
+	@Override
+	public int getMarkerCount() {
+		return 1;
 	}
 
 }

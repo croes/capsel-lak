@@ -3,14 +3,18 @@ package ui.map;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import log.LogManager;
 import log.Logger;
 import ui.marker.EdgeMarker;
-import ui.marker.ProxyMarker;
 import ui.marker.SwitchableNamedMarker;
+import ui.marker.proxy.EmptyProxyMarker;
+import ui.marker.proxy.GroupedProxyMarker;
+import ui.marker.proxy.ProxyMarker;
 import util.StringCouple;
 import de.fhpotsdam.unfolding.events.EventDispatcher;
 import de.fhpotsdam.unfolding.events.MapEvent;
@@ -89,7 +93,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	private transient boolean showCountry;
 	private transient Map<StringCouple, Integer> lastShownEdgeData;
 
-	public SwitchingLAKMap(AbstractLAKMap.DataProvider data, boolean drawFPS) {
+	public SwitchingLAKMap(DataProvider data, boolean drawFPS) {
 		super(data, drawFPS);
 		showCountry = true;
 		lastShownEdgeData = null;
@@ -180,7 +184,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 				continue;
 			}
 
-			if (getNodeMarkerWithName(organization) != null)
+			if (super.getNodeMarkerWithName(organization).getMarkerCount() != 0)
 				continue;
 
 			Location organizationLocation = dataProvider.getOrganizationLocation(organization);
@@ -209,7 +213,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 			ProxyMarker<Node> m1 = getNodeMarkerWithName(orgs.getString1());
 			ProxyMarker<Node> m2 = getNodeMarkerWithName(orgs.getString2());
 
-			if (m1 == null || m2 == null)
+			if (m1.getMarkerCount() == 0 || m2.getMarkerCount() == 0)
 				continue;
 
 			Edge edge = new Edge(m1, m2);
@@ -233,17 +237,13 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		for (StringCouple orgs : lastShownEdgeData.keySet()) {
 			ProxyMarker<Edge> edge = getEdgeMarkerForNames(orgs);
 
-			if (edge == null) {
-				logger.error("Cannot find edge marker for organization couple %s", orgs);
-				continue;
-			}
-
 			Integer width = cooperationData.get(orgs);
 			if (width == null) {
 				edge.setHidden(true);
 			} else {
 				edge.setHidden(false);
-				edge.getOriginal().setWidthAnimated(width);
+				for (int i = 0; i < edge.getMarkerCount(); i++)
+					edge.getOriginal(i).setWidthAnimated(width);
 			}
 		}
 	}
@@ -272,22 +272,16 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 
 		for (String organization : organizations) {
 			Marker marker = getNodeMarkerWithName(organization);
-			if (marker != null)
-				marker.setHidden(false);
-			else
-				logger.error("Marker for organization %s not found", organization);
+			marker.setHidden(false);
 		}
 
 		for (Map.Entry<StringCouple, Integer> edge : edgeData.entrySet()) {
 			ProxyMarker<Edge> edgeMarker = getEdgeMarkerForNames(edge.getKey());
 
-			if (edgeMarker == null) {
-				logger.error("Edge marker for organization couple %s not found", edge.getKey());
-				continue;
-			}
-
 			edgeMarker.setHidden(false);
-			edgeMarker.getOriginal().setWidthAnimated(edge.getValue());
+
+			for (int i = 0; i < edgeMarker.getMarkerCount(); i++)
+				edgeMarker.getOriginal(i).setWidthAnimated(edge.getValue());
 		}
 	}
 
@@ -326,10 +320,82 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	public void selectOrg(String selectedUniversity) {
 		getNodeMarkerWithName(selectedUniversity).setSelected(true);
 	}
-	
+
 	@Override
 	public void unselectOrg(String unselectedUniversity) {
 		getNodeMarkerWithName(unselectedUniversity).setSelected(false);
+	}
+
+	@Override
+	protected ProxyMarker<Edge> getEdgeMarkerForNames(StringCouple names) {
+		if (!showCountry)
+			return super.getEdgeMarkerForNames(names);
+
+		String country1 = dataProvider.getCountry(names.getString1());
+		String country2 = dataProvider.getCountry(names.getString2());
+
+		if ((country1 == null) || (country2 == null) || country1.equals(country2)) {
+			// not useful or even impossible to show
+			return new EmptyProxyMarker<>();
+		}
+
+		Set<StringCouple> organizationCooperations = dataProvider
+				.getOrganizationCooperationForCountries(new StringCouple(country1, country2));
+
+		if (organizationCooperations.isEmpty()) {
+			logger.error(
+					"There are apparently no coperations between countries %s and %s, but we know %s and %s cooperated...",
+					country1, country2, names.getString1(), names.getString2());
+			return new EmptyProxyMarker<>();
+		}
+
+		List<ProxyMarker<Edge>> edges = new LinkedList<>();
+
+		for (StringCouple coop : organizationCooperations) {
+			ProxyMarker<Edge> edge = super.getEdgeMarkerForNames(coop);
+			if (edge.getMarkerCount() == 0)
+				continue;
+			edges.add(edge);
+		}
+
+		return new GroupedProxyMarker<>(edges);
+	}
+
+	/**
+	 * Find the marker with a given name
+	 */
+	protected ProxyMarker<Node> getNodeMarkerWithName(String name) {
+		if (!showCountry)
+			return super.getNodeMarkerWithName(name);
+
+		String country = dataProvider.getCountry(name);
+
+		if (country == null) {
+			logger.error("Cannot found country for organization %s", name);
+			return new EmptyProxyMarker<>();
+		}
+
+		Set<String> organizations = dataProvider.getOrganizations(country);
+
+		List<ProxyMarker<Node>> nodes = new LinkedList<>();
+
+		for (String organization : organizations) {
+			ProxyMarker<Node> node = super.getNodeMarkerWithName(organization);
+			if (node.getMarkerCount() == 0) {
+				logger.error("Unable to find marker for organization %s", organization);
+				logger.error("Got %s in return", node);
+				continue;
+			}
+
+			nodes.add(node);
+		}
+
+		if (nodes.isEmpty()) {
+			logger.error("Organizations for country %s is empty, but we know %s is in that country...", country, name);
+			return new EmptyProxyMarker<>();
+		}
+
+		return new GroupedProxyMarker<>(nodes);
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import ui.marker.proxy.SingleProxyMarker;
 import util.ConcurrentHashSet;
 import de.fhpotsdam.unfolding.marker.AbstractMarkerManager;
 import de.fhpotsdam.unfolding.marker.Marker;
@@ -13,9 +14,9 @@ import de.fhpotsdam.unfolding.marker.Marker;
  * An {@link AbstractMarkerManager} implementation that draws the {@link Marker}
  * s with <tt>{@link Marker#isSelected()} == true</tt> last.
  */
-public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerManager<ProxyMarker<E>> {
+public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerManager<SingleProxyMarker<E>> {
 
-	private class SetIterator implements Iterator<ProxyMarker<E>> {
+	private class SetIterator implements Iterator<SingleProxyMarker<E>> {
 
 		private boolean unselectedDone;
 		private Iterator<MarkerWrapper> it;
@@ -53,7 +54,7 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 
 	private class OriginalSetIterator implements Iterator<E> {
 
-		private Iterator<ProxyMarker<E>> it = new SetIterator();
+		private Iterator<SingleProxyMarker<E>> it = new SetIterator();
 
 		@Override
 		public boolean hasNext() {
@@ -72,13 +73,13 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 
 	}
 
-	public class MarkerWrapper extends ProxyMarker<E> {
+	public class MarkerWrapper extends SingleProxyMarker<E> {
 
 		public MarkerWrapper(E original) {
 			super(original);
 		}
 
-		public MarkerWrapper(ProxyMarker<E> origProxy) {
+		public MarkerWrapper(SingleProxyMarker<E> origProxy) {
 			super(origProxy);
 		}
 
@@ -105,16 +106,16 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 	}
 
 	@Override
-	public Collection<ProxyMarker<E>> getMarkers() {
-		Set<ProxyMarker<E>> all = new HashSet<>();
+	public Collection<SingleProxyMarker<E>> getMarkers() {
+		Set<SingleProxyMarker<E>> all = new HashSet<>();
 		all.addAll(selected);
 		all.addAll(unselected);
 		return all;
 	}
 
 	@Override
-	public void addMarkers(Collection<ProxyMarker<E>> markers) {
-		for (ProxyMarker<E> o : markers) {
+	public void addMarkers(Collection<SingleProxyMarker<E>> markers) {
+		for (SingleProxyMarker<E> o : markers) {
 			MarkerWrapper m = new MarkerWrapper(o);
 			if (m.isSelected())
 				selected.add(m);
@@ -134,7 +135,7 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 	}
 
 	@Override
-	public boolean addMarker(ProxyMarker<E> marker) {
+	public boolean addMarker(SingleProxyMarker<E> marker) {
 		MarkerWrapper m = new MarkerWrapper(marker);
 		if (m.isSelected())
 			return selected.add(m);
@@ -142,7 +143,7 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 			return unselected.add(m);
 	}
 	
-	public ProxyMarker<E> addOriginalMarker(E marker) {
+	public SingleProxyMarker<E> addOriginalMarker(E marker) {
 		MarkerWrapper m = new MarkerWrapper(marker);
 		if (m.isSelected())
 			selected.add(m);
@@ -158,19 +159,19 @@ public class SelectableMarkerManager<E extends Marker> extends AbstractMarkerMan
 	}
 
 	@Override
-	public boolean removeMarker(ProxyMarker<E> marker) {
+	public boolean removeMarker(SingleProxyMarker<E> marker) {
 		return unselected.remove(marker) || selected.remove(marker);
 	}
 
 	@Override
-	public void setMarkers(Collection<ProxyMarker<E>> markers) {
+	public void setMarkers(Collection<SingleProxyMarker<E>> markers) {
 		clearMarkers();
 		if (markers != null)
 			addMarkers(markers);
 	}
 
 	@Override
-	public Iterator<ProxyMarker<E>> iterator() {
+	public Iterator<SingleProxyMarker<E>> iterator() {
 		return new SetIterator();
 	}
 

@@ -6,16 +6,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
 
 import log.LogManager;
 import log.Logger;
 import processing.core.PApplet;
 import ui.marker.EdgeMarker;
 import ui.marker.NamedMarker;
-import ui.marker.ProxyMarker;
 import ui.marker.SelectableMarkerManager;
+import ui.marker.proxy.EmptyProxyMarker;
+import ui.marker.proxy.ProxyMarker;
 import util.StringCouple;
 import util.task.Task;
 import util.task.TaskManager;
@@ -31,44 +30,6 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	private static final long serialVersionUID = 7338377844735009681L;
 
 	private static final Logger logger = LogManager.getLogger(AbstractLAKMap.class);
-
-	public static interface DataProvider {
-
-		Location getCountryLocation(String country);
-
-		Location getOrganizationLocation(String organization);
-
-		String getCountry(String organization);
-
-		SortedSet<String> getAllOrganizations();
-
-		/**
-		 * Just a call to
-		 * <code>getOrganizationsForConference(conferenceAcronym, null);</code>
-		 * 
-		 * @see #getOrganizationsForConference(String, Set)
-		 */
-		Set<String> getOrganizationsForConference(String conferenceAcronym);
-
-		/**
-		 * Returns a set containing the organizations for the given conference.
-		 * If the set given is not <code>null</code>, the data is added to that
-		 * set and the set is returned. Otherwise, a new set object is returned.
-		 */
-		Set<String> getOrganizationsForConference(String conferenceAcronym, Set<String> organizations);
-
-		Set<StringCouple> getOrganizationCooperationsForConference(String conferenceAcronym);
-
-		Set<StringCouple> getOrganizationCooperationsForConference(String conferenceAcronym,
-				Set<StringCouple> organizationCooperation);
-
-		Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym);
-
-		Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym,
-				Map<StringCouple, Integer> data);
-
-		Map<StringCouple, Integer> getAllOrganizationCooperationData();
-	}
 
 	protected UnfoldingMap map;
 
@@ -186,7 +147,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	 * Find the marker with a given name
 	 */
 	protected ProxyMarker<Node> getNodeMarkerWithName(String name) {
-		return nodes.get(name);
+		ProxyMarker<Node> node = nodes.get(name);
+		if (node == null)
+			return new EmptyProxyMarker<>();
+		return node;
 	}
 
 	protected final void storeEdgeMarker(String from, String to, Edge marker) {
@@ -213,7 +177,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	}
 
 	protected ProxyMarker<Edge> getEdgeMarkerForNames(StringCouple names) {
-		return edges.get(names);
+		ProxyMarker<Edge> edge = edges.get(names);
+		if (edge == null)
+			return new EmptyProxyMarker<>();
+		return edge;
 	}
 
 	public void showAllConferences() {
@@ -222,8 +189,9 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	}
 
 	public abstract void showConferences(Collection<String> selectedConferenceAcronyms);
-	
+
 	public abstract void selectOrg(String selectedUniversity);
+
 	public abstract void unselectOrg(String unselectedUniversity);
 
 	/**

@@ -10,7 +10,7 @@ import processing.core.PApplet;
 import rdf.RDFModel;
 import ui.marker.EdgeMarker;
 import ui.marker.NamedMarker;
-import ui.marker.ProxyMarker;
+import ui.marker.proxy.SingleProxyMarker;
 import util.StringUtil;
 import util.location.LocationCache;
 import util.location.OrganizationLocationCache;
@@ -69,7 +69,7 @@ public class UniversityMap extends AbstractLAKMap {
 		for (RDFNode node : RDFModel.getOrganisationsOfConference(confAcronym)) {
 			String orgName = StringUtil.getString(node.asResource().getProperty(FOAF.name));
 
-			for (ProxyMarker<NamedMarker> m : nodeMarkerManager) {
+			for (SingleProxyMarker<NamedMarker> m : nodeMarkerManager) {
 				if (m.getOriginal().getName().equals(orgName))
 					m.setHidden(false);
 			}
