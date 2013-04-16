@@ -78,12 +78,46 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	}
 
 	public static class Edge extends EdgeMarker<Node> {
+		
+		private final SwitchingLAKMap map;
 
-		public Edge(ProxyMarker<Node> m1, ProxyMarker<Node> m2) {
+		public Edge(SwitchingLAKMap map, ProxyMarker<Node> m1, ProxyMarker<Node> m2) {
 			super(m1.getOriginal(), m2.getOriginal());
 
+			this.map = map;
+			
 			m1.getOriginal().setProxy(m1);
 			m2.getOriginal().setProxy(m2);
+		}
+		
+		@Override
+		public void setSelected(boolean selected) {
+			if (selected == isSelected()) {
+				super.setSelected(selected);
+				return;
+			}
+			
+			// this may take some calculation
+			ProxyMarker<Node> m1s = map.getNodeMarkerWithName(getM1().getName());
+			ProxyMarker<Node> m2s = map.getNodeMarkerWithName(getM2().getName());
+			
+			super.setSelected(selected);
+			
+			for (int i = 0; i < m1s.getMarkerCount(); i++) {
+				if (selected) {
+					m1s.getOriginal(i).addSelectedLine();
+				} else {
+					m1s.getOriginal(i).removeSelectedLine();
+				}
+			}
+			
+			for (int i = 0; i < m2s.getMarkerCount(); i++) {
+				if (selected) {
+					m2s.getOriginal(i).addSelectedLine();
+				} else {
+					m2s.getOriginal(i).removeSelectedLine();
+				}
+			}
 		}
 
 	}
@@ -233,7 +267,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 			if (m1.getMarkerCount() == 0 || m2.getMarkerCount() == 0)
 				continue;
 
-			Edge edge = new Edge(m1, m2);
+			Edge edge = new Edge(this, m1, m2);
 
 			Integer width = cooperationData.get(orgs);
 			if (width == null) {
