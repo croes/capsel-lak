@@ -34,8 +34,6 @@
 
 ## TODO
 - KeywordMap bugs eruithalen
-- Edges toevoegen aan lakmap
-- Treshold tussen country en organisation markers aanpassen
 
 
 ## DONE
@@ -43,3 +41,5 @@
 + Als hover over barchart, de universiteit op de map openen
 + Meer filtering-opties (conferentie scheiden van jaar bvb) -> show multiple at the same time and differentiate between them with colors or shading. 
 + Countrymap samenbrengen met UniversityMap (met animatie)
++ Edges toevoegen aan lakmap
++ Treshold tussen country en organisation markers aanpassen

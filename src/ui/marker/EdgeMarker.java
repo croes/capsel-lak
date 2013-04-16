@@ -28,6 +28,7 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 	private float weightPercentage;
 	
 	private Ani currentAnimation;
+	private Ani currentHideAnimation;
 	
 	public EdgeMarker(E m1, E m2){
 		super(m1.getLocation(), m2.getLocation());
@@ -35,6 +36,7 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 		this.m2 = m2;
 		
 		weightPercentage = 1;
+		currentHideAnimation = null;
 		
 		id = new StringCouple(m1.getName(), m2.getName());
 		
@@ -64,10 +66,39 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 		super.setHidden(hidden);
 		
 		if (hidden)
-			Ani.to(this, ANI_DURATION, "weightPercentage", 0, Easing.QUAD_OUT);
+			currentHideAnimation = Ani.to(this, ANI_DURATION, "weightPercentage", 0, Easing.QUAD_OUT);
 		else
 			// delay
-			Ani.to(this, ANI_DURATION, ANI_DURATION, "weightPercentage", 1, Easing.QUAD_IN);
+			currentHideAnimation = Ani.to(this, ANI_DURATION, ANI_DURATION, "weightPercentage", 1, Easing.QUAD_IN);
+		
+		currentHideAnimation.start();
+	}
+	
+	public void setHiddenUnanimated(boolean hidden) {
+		if (hidden == isHidden() && (currentHideAnimation == null || currentHideAnimation.isEnded()))
+			return;
+		
+		super.setHidden(hidden);
+		
+		if (!hidden) {
+			// show directly
+			if (currentHideAnimation == null || currentHideAnimation.isEnded())
+				weightPercentage = 1;
+			else {
+				currentHideAnimation.setEnd(1);
+				currentHideAnimation.end();
+				currentHideAnimation = null;
+			}
+		} else {
+			// hide with a delay, but do it instantaneously
+			if (currentHideAnimation != null && !currentHideAnimation.isEnded()) {
+				currentHideAnimation.setEnd(weightPercentage);
+				currentHideAnimation.end();
+			}
+			
+			currentHideAnimation = Ani.to(this, 0, ANI_DURATION, "weightPercentage", 0, Easing.LINEAR);
+			currentHideAnimation.start();
+		}
 	}
 	
 	@Override

@@ -81,7 +81,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		map.addMarkerManager(nodeMarkerManager);
 
 		logger.debug("Scheduling task to populate the map");
-		mapTaskManager.schedule(new Task("PopulateMap") {
+		schedule(new Task("PopulateMap") {
 			@Override
 			public void execute() throws Throwable {
 				logger.debug("Populating the map");
@@ -193,6 +193,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	public abstract void selectOrg(String selectedUniversity);
 
 	public abstract void unselectOrg(String unselectedUniversity);
+	
+	protected final void schedule(Task task) {
+		mapTaskManager.schedule(task);
+	}
 
 	/**
 	 * Takes care of the hovering feature. When you hover over a marker, the
@@ -202,7 +206,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	public void mouseMoved() {
 		final List<? extends Marker> hitEdgeMarkers = edgeMarkerManager.getHitMarkers(mouseX, mouseY);
 		final List<? extends Marker> hitNodeMarkers = nodeMarkerManager.getHitMarkers(mouseX, mouseY);
-		mapTaskManager.schedule(new Task("mouseMoved") {
+		schedule(new Task("mouseMoved") {
 			@Override
 			public void execute() throws Throwable {
 
