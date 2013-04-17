@@ -78,31 +78,31 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	}
 
 	public static class Edge extends EdgeMarker<Node> {
-		
+
 		private final SwitchingLAKMap map;
 
 		public Edge(SwitchingLAKMap map, ProxyMarker<Node> m1, ProxyMarker<Node> m2) {
 			super(m1.getOriginal(), m2.getOriginal());
 
 			this.map = map;
-			
+
 			m1.getOriginal().setProxy(m1);
 			m2.getOriginal().setProxy(m2);
 		}
-		
+
 		@Override
 		public void setSelected(boolean selected) {
 			if (selected == isSelected()) {
 				super.setSelected(selected);
 				return;
 			}
-			
+
 			// this may take some calculation
 			ProxyMarker<Node> m1s = map.getNodeMarkerWithName(getM1().getName());
 			ProxyMarker<Node> m2s = map.getNodeMarkerWithName(getM2().getName());
-			
+
 			super.setSelected(selected);
-			
+
 			for (int i = 0; i < m1s.getMarkerCount(); i++) {
 				if (selected) {
 					m1s.getOriginal(i).addSelectedLine();
@@ -110,7 +110,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 					m1s.getOriginal(i).removeSelectedLine();
 				}
 			}
-			
+
 			for (int i = 0; i < m2s.getMarkerCount(); i++) {
 				if (selected) {
 					m2s.getOriginal(i).addSelectedLine();
@@ -121,7 +121,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		}
 
 	}
-	
+
 	private static final int TRESHOLD = 4;
 
 	private static final long serialVersionUID = -4973608268494925502L;
@@ -177,10 +177,10 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 				return map.getId();
 			}
 		}, "zoom", map.getId());
-		
+
 		scheduleSetShowCountry(map.getZoomLevel() <= TRESHOLD);
 	}
-	
+
 	private void scheduleSetShowCountry(final boolean showCountry) {
 		schedule(new Task("SetShowCountry") {
 			@Override
@@ -197,7 +197,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		this.showCountry = showCountry;
 
 		// do the hard work
-		
+
 		final Map<StringCouple, Integer> edgeData = getCooperationData();
 
 		for (ProxyMarker<Node> m : nodeMarkerManager) {
@@ -341,11 +341,11 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		logger.trace("Setting cooperation data, size = %d", data == null ? 0 : data.size());
 		cooperationData = data;
 	}
-	
+
 	private Map<StringCouple, Integer> getCooperationData() {
 		if (cooperationData == null)
 			return Collections.emptyMap();
-		
+
 		if (!showCountry)
 			return cooperationData;
 
@@ -410,7 +410,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 				continue;
 			edges.add(edge);
 		}
-		
+
 		if (edges.isEmpty()) {
 			logger.error(
 					"There are apparently no coperations between countries %s and %s, but we know %s and %s cooperated...",
@@ -446,7 +446,7 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 				logger.error("Got %s in return", node);
 				continue;
 			}
-
+			
 			nodes.add(node);
 		}
 

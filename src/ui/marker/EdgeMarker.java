@@ -18,6 +18,9 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 	private static final float ANI_DURATION = .5f;
 	private static final int DEFAULT_STROKE_WEIGHT = 1;
 	
+	private static final int COLOR = 0xF0505050;
+	private static final int HIGHLIGHT_COLOR = 0xFFFF0000;
+	
 	private E m1, m2;
 	
 	private StringCouple id;
@@ -34,6 +37,9 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 		super(m1.getLocation(), m2.getLocation());
 		this.m1 = m1;
 		this.m2 = m2;
+		
+		setColor(COLOR);
+		setHighlightColor(HIGHLIGHT_COLOR);
 		
 		weightPercentage = 1;
 		currentHideAnimation = null;
