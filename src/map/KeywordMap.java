@@ -192,7 +192,8 @@ public class KeywordMap extends PApplet {
 				"orgname");
 		for (String orgName : orgnames) {
 			NamedMarker nm = getMarkerWithName(orgName);
-			nm.setColor(HIGHLIGHTED_MARKER_COLOR);
+			if(nm != null)
+				nm.setColor(HIGHLIGHTED_MARKER_COLOR);
 		}
 	}
 
