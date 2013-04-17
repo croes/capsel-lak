@@ -147,7 +147,7 @@ public class KeywordMap extends PApplet {
 				} else if (e.isGroup() && e.getGroup().getName().equals("Keywords")) {
 					int idx = (int) e.getGroup().getValue();
 					String keyword = keywordList.getItem(idx).getName();
-					logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
+					//logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
 					markMarkers(currConf, keyword);
 				} else if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
 					showAll();
