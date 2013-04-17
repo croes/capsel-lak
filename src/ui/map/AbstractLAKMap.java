@@ -1,11 +1,11 @@
 package ui.map;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
 
 import log.LogManager;
 import log.Logger;
@@ -13,6 +13,8 @@ import processing.core.PApplet;
 import ui.marker.EdgeMarker;
 import ui.marker.NamedMarker;
 import ui.marker.SelectableMarkerManager;
+import ui.marker.proxy.EmptyProxyMarker;
+import ui.marker.proxy.ProxyMarker;
 import util.StringCouple;
 import util.task.Task;
 import util.task.TaskManager;
@@ -22,59 +24,22 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
 
-public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends EdgeMarker<Node>> extends PApplet {
+public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends EdgeMarker<Node>> extends PApplet implements
+		ComponentListener {
 
 	private static final long serialVersionUID = 7338377844735009681L;
 
 	private static final Logger logger = LogManager.getLogger(AbstractLAKMap.class);
 
-	public static interface DataProvider {
-
-		Location getCountryLocation(String country);
-
-		Location getOrganizationLocation(String organization);
-
-		String getCountry(String organization);
-
-		SortedSet<String> getAllOrganizations();
-
-		/**
-		 * Just a call to
-		 * <code>getOrganizationsForConference(conferenceAcronym, null);</code>
-		 * 
-		 * @see #getOrganizationsForConference(String, Set)
-		 */
-		Set<String> getOrganizationsForConference(String conferenceAcronym);
-
-		/**
-		 * Returns a set containing the organizations for the given conference.
-		 * If the set given is not <code>null</code>, the data is added to that
-		 * set and the set is returned. Otherwise, a new set object is returned.
-		 */
-		Set<String> getOrganizationsForConference(String conferenceAcronym, Set<String> organizations);
-
-		Set<StringCouple> getOrganizationCooperationsForConference(String conferenceAcronym);
-
-		Set<StringCouple> getOrganizationCooperationsForConference(String conferenceAcronym,
-				Set<StringCouple> organizationCooperation);
-
-		Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym);
-
-		Map<StringCouple, Integer> getOrganizationCooperationDataForConference(String conferenceAcronym,
-				Map<StringCouple, Integer> data);
-		
-		Map<StringCouple, Integer> getAllOrganizationCooperationData();
-	}
-
 	protected UnfoldingMap map;
 
 	protected final SelectableMarkerManager<Node> nodeMarkerManager;
 	protected final SelectableMarkerManager<Edge> edgeMarkerManager;
-	
-	private final Map<String, Node> nodes;
-	private final Map<StringCouple, Edge> edges;
 
-	private final TaskManager mouseMovedTaskManager;
+	private final Map<String, ProxyMarker<Node>> nodes;
+	private final Map<StringCouple, ProxyMarker<Edge>> edges;
+
+	private final TaskManager mapTaskManager;
 
 	protected final DataProvider dataProvider;
 
@@ -84,11 +49,11 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		dataProvider = data;
 		this.drawFPS = drawFPS;
 
-		mouseMovedTaskManager = new TaskManager("MouseMoved", 1);
+		mapTaskManager = new TaskManager("MapTaskManager", 1);
 
 		nodeMarkerManager = new SelectableMarkerManager<>();
 		edgeMarkerManager = new SelectableMarkerManager<>();
-		
+
 		nodes = new HashMap<>();
 		edges = new HashMap<>();
 	}
@@ -97,7 +62,9 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	public void setup() {
 		logger.debug("Setting up AbstractLAKMap");
 
-		frameRate(30);
+		addComponentListener(this);
+
+		frameRate(60);
 		smooth();
 
 		// init LibAni
@@ -113,9 +80,15 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		map.addMarkerManager(edgeMarkerManager);
 		map.addMarkerManager(nodeMarkerManager);
 
-		logger.debug("Populating the map");
-		createAllNodeMarkers();
-		createAllEdgeMarkers();
+		logger.debug("Scheduling task to populate the map");
+		schedule(new Task("PopulateMap") {
+			@Override
+			public void execute() throws Throwable {
+				logger.debug("Populating the map");
+				createAllNodeMarkers();
+				createAllEdgeMarkers();
+			}
+		});
 
 		logger.debug("AbstractLAKMap set up");
 	}
@@ -144,10 +117,10 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		fill(0xFFEEEEEE);
 		text(s, 15, 20);
 	}
-	
+
 	protected final void storeNodeMarker(Node marker) {
-		nodeMarkerManager.addOriginalMarker(marker);
-		nodes.put(marker.getName(), marker);
+		ProxyMarker<Node> proxy = nodeMarkerManager.addOriginalMarker(marker);
+		nodes.put(marker.getName(), proxy);
 	}
 
 	protected abstract void createAllNodeMarkers();
@@ -173,29 +146,41 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	/**
 	 * Find the marker with a given name
 	 */
-	protected Node getNodeMarkerWithName(String name) {
-		return nodes.get(name);
+	protected ProxyMarker<Node> getNodeMarkerWithName(String name) {
+		ProxyMarker<Node> node = nodes.get(name);
+		if (node == null)
+			return new EmptyProxyMarker<>();
+		return node;
 	}
-	
+
 	protected final void storeEdgeMarker(String from, String to, Edge marker) {
-		edgeMarkerManager.addOriginalMarker(marker);
-		edges.put(new StringCouple(from, to), marker);
+		storeEdgeMarker(new StringCouple(from, to), marker);
+	}
+
+	protected final void storeEdgeMarker(StringCouple locs, Edge marker) {
+		ProxyMarker<Edge> proxy = edgeMarkerManager.addOriginalMarker(marker);
+		edges.put(locs, proxy);
 	}
 
 	protected abstract void createAllEdgeMarkers();
-	
-	protected void showAllEdgeMarkers() {
-		// TODO revert back to the data of all conferences if needed
-		
-		for (Marker m : edgeMarkerManager) {
-			m.setHidden(false);
-		}
-	}
-	
+
+	protected abstract void showAllEdgeMarkers();
+
 	protected void hideAllEdgeMarkers() {
 		for (Marker m : edgeMarkerManager) {
 			m.setHidden(true);
 		}
+	}
+
+	protected ProxyMarker<Edge> getEdgeMarkerForNames(String name1, String name2) {
+		return getEdgeMarkerForNames(new StringCouple(name1, name2));
+	}
+
+	protected ProxyMarker<Edge> getEdgeMarkerForNames(StringCouple names) {
+		ProxyMarker<Edge> edge = edges.get(names);
+		if (edge == null)
+			return new EmptyProxyMarker<>();
+		return edge;
 	}
 
 	public void showAllConferences() {
@@ -205,6 +190,14 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 	public abstract void showConferences(Collection<String> selectedConferenceAcronyms);
 
+	public abstract void selectOrg(String selectedUniversity);
+
+	public abstract void unselectOrg(String unselectedUniversity);
+	
+	protected final void schedule(Task task) {
+		mapTaskManager.schedule(task);
+	}
+
 	/**
 	 * Takes care of the hovering feature. When you hover over a marker, the
 	 * marker is set to selected and the marker handles it change in look
@@ -213,7 +206,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	public void mouseMoved() {
 		final List<? extends Marker> hitEdgeMarkers = edgeMarkerManager.getHitMarkers(mouseX, mouseY);
 		final List<? extends Marker> hitNodeMarkers = nodeMarkerManager.getHitMarkers(mouseX, mouseY);
-		mouseMovedTaskManager.schedule(new Task("mouseMoved") {
+		schedule(new Task("mouseMoved") {
 			@Override
 			public void execute() throws Throwable {
 
@@ -228,4 +221,25 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 		});
 	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+		map.mapDisplay.resize(getWidth(), getHeight());
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+		// NOP
+	}
+
+	@Override
+	public void componentShown(ComponentEvent e) {
+		// NOP
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {
+		// NOP
+	}
+
 }

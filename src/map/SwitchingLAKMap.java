@@ -10,9 +10,9 @@ import log.Logger;
 import processing.core.PApplet;
 import rdf.RDFModel;
 import ui.marker.EdgeMarker;
-import ui.marker.ProxyMarker;
 import ui.marker.SelectableMarkerManager;
 import ui.marker.SwitchableNamedMarker;
+import ui.marker.proxy.ProxyMarker;
 import util.StringUtil;
 import util.location.CountryLocationCache;
 import util.location.LocationCache;
@@ -81,7 +81,7 @@ public class SwitchingLAKMap extends PApplet {
 			universityLocationCache = new OrganizationLocationCache("data/organisations.csv");
 
 			logger.debug("Creating OrganizationCountryMap");
-			orgCountryMap = new OrganizationCountryMap("data/organizations_countries.csv");
+			orgCountryMap = new OrganizationCountryMap("data/organisations_countries.csv");
 		} catch (IOException e) {
 			logger.fatal("Location cache file produced an IO Error");
 			logger.catching(e);

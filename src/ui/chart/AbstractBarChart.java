@@ -2,6 +2,7 @@ package ui.chart;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 
 import javax.swing.event.EventListenerList;
 
@@ -21,7 +22,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-public abstract class AbstractBarChart extends ChartPanel implements ChartMouseListener, BarMouseListener {
+public abstract class AbstractBarChart extends ChartPanel implements ChartMouseListener, BarMouseListener  {
 
 	private static final long serialVersionUID = 7950681964454985295L;
 
@@ -38,9 +39,22 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 	private transient final ConferenceBarPainter painter;
 
 	private transient final EventListenerList barEventListeners;
+	
+	private final String title;
+	private final String fullTitle;
 
 	public AbstractBarChart(String title, String xAxisTitle, String yAxisTitle) {
 		super(null); // set to no chart for the time being
+		this.fullTitle = title;
+		String smallTitle;
+		if(title.length() > 28){
+			smallTitle = title.substring(0, 24);
+			smallTitle += "...";
+		} else{
+			smallTitle = title;
+		}
+		this.title = smallTitle;
+		
 		addChartMouseListener(this);
 
 		barEventListeners = new EventListenerList();
@@ -59,10 +73,10 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 		dataset = new DefaultCategoryDataset();
 
 		// create chart
-		JFreeChart chart = ChartFactory.createBarChart(title, xAxisTitle, yAxisTitle, dataset,
+		JFreeChart chart = ChartFactory.createBarChart(this.title, xAxisTitle, yAxisTitle, dataset,
 				PlotOrientation.VERTICAL, true, false, false);
 		setChart(chart);
-
+	
 		// set the background color for the chart...
 		chart.setBackgroundPaint(Color.white);
 
@@ -79,6 +93,7 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 		renderer = (BarRenderer) plot.getRenderer();
 		painter = new ConferenceBarPainter(true);
 		renderer.setBarPainter(painter);
+		
 	}
 
 	protected void setDomainAxisVisible(boolean visible) {
@@ -147,6 +162,11 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 	@Override
 	public void chartMouseMoved(ChartMouseEvent event) {
+		BarMouseListener[] listeners = barEventListeners.getListeners(BarMouseListener.class);
+		/*for (BarMouseListener listener : listeners) {
+			listener.barChartMouseMoved(event);
+		}*/
+		
 		ChartEntity entity = event.getEntity();
 
 		if (highlightedEntity == entity)
@@ -159,7 +179,7 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 		CategoryItemEntity barEntity = (CategoryItemEntity) entity;
 
-		BarMouseListener[] listeners = barEventListeners.getListeners(BarMouseListener.class);
+		listeners = barEventListeners.getListeners(BarMouseListener.class);
 		if (listeners.length == 0) {
 			// no one to notify
 			highlightedEntity = barEntity;
@@ -270,5 +290,25 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 	@Override
 	public void mouseClick(BarMouseEvent event) {
 		// NOP
+	}
+	
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		getChart().setTitle(this.fullTitle);
+		super.mouseEntered(arg0);
+	}
+	
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		getChart().setTitle(this.title);
+		super.mouseExited(arg0);
+	}
+	
+	public void barChartMouseMoved(ChartMouseEvent event) {
+		//NOP
+	}
+	
+	public String getFullTitle(){
+		return fullTitle;
 	}
 }

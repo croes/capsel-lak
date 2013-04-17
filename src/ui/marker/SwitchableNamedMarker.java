@@ -23,9 +23,13 @@ public class SwitchableNamedMarker extends NamedMarker {
 	public SwitchableNamedMarker(String s1, Location l1, String s2, Location l2) {
 		this(s1, l1, s2, l2, true);
 	}
+	
+	public SwitchableNamedMarker(String s1, Location l1, String s2, Location l2, boolean showTwo) {
+		this(s1, l1, s2, l2, showTwo, true);
+	}
 
-	public SwitchableNamedMarker(String s1, Location l1, String s2, Location l2, boolean animated) {
-		super(s1, new Location(l1), animated);
+	public SwitchableNamedMarker(String s1, Location l1, String s2, Location l2, boolean showTwo, boolean animated) {
+		super(s1, new Location(showTwo ? l2 : l1), animated);
 		
 		str_one = s1;
 		str_two = s2;
@@ -33,8 +37,8 @@ public class SwitchableNamedMarker extends NamedMarker {
 		loc_one = l1;
 		loc_two = l2;
 		
-		switchState = SwitchState.ONE;
-		switchCurrent = 0;
+		switchState = showTwo ? SwitchState.TWO : SwitchState.ONE;
+		switchCurrent = showTwo ? 1 : 0;
 	}
 
 	@Override

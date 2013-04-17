@@ -1,9 +1,10 @@
 package ui.marker;
 
+import ui.marker.proxy.SingleProxyMarker;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.marker.Marker;
 
-public class HideableMarker<E extends Marker> extends ProxyMarker<E> {
+public class HideableMarker<E extends Marker> extends SingleProxyMarker<E> {
 
 	public HideableMarker(E original) {
 		super(original);

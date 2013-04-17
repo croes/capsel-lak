@@ -20,17 +20,17 @@ public class StringUtil {
 
 	public static String getString(String s) {
 		if (s == null || (s = s.trim()).length() == 0)
-			return "";
+			return s;
 
-		return duplicates.hasKey(s) ? duplicates.get(s) : s;
+		return duplicates.hasKey(s) ? duplicates.get(s).trim() : s.trim();
 	}
 	
 	public static String getString(Literal l) {
-		return getString(l == null ? "" : l.getString());
+		return getString(l == null ? null : l.getString());
 	}
 	
 	public static String getString(Statement s) {
-		return getString(s == null ? "" : s.getString());
+		return getString(s == null ? null : s.getString());
 	}
 	
 	public static String parseCountryURL(String countryURL) {
@@ -41,6 +41,16 @@ public class StringUtil {
 	
 	public static String parseCountryURL(Resource s) {
 		return parseCountryURL(String.valueOf(s));
+	}
+	
+	public static String getInitials(String longString){
+		StringBuilder builder = new StringBuilder();
+		String[] words = longString.split(" ");
+		for (int i = 0; i < words.length; i++) {
+			if(words[i].length() > 0)
+				builder.append(words[i].charAt(0));
+		}
+		return builder.toString();
 	}
 
 	private StringUtil() {

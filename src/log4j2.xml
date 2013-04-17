@@ -6,13 +6,13 @@
 	    <filter type="ThresholdFilter" level="TRACE" onMatch="NEUTRAL" onMismatch="DENY" />
         <filter type="ThresholdFilter" level="ERROR" onMatch="DENY" onMismatch="ACCEPT" />
       </filters>
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-10t] [%-5level] %logger{36} - %msg%n"/>
     </Console>
     <Console name="err" target="SYSTEM_ERR">
       <filters>
 	    <filter type="ThresholdFilter" level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
       </filters>
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-10t] [%-5level] %logger{36} - %msg%n"/>
     </Console>
   </appenders>
   <loggers>
@@ -20,6 +20,8 @@
     
     <logger name="com.hp.hpl.jena" level="warn" />
     <logger name="org.apache.jena" level="warn" />
+    
+    <logger name="util" level="warn" />
     
     <root level="debug">
       <appender-ref ref="out"/>

@@ -10,7 +10,7 @@ import processing.core.PApplet;
 import rdf.RDFModel;
 import ui.marker.EdgeMarker;
 import ui.marker.NamedMarker;
-import ui.marker.ProxyMarker;
+import ui.marker.proxy.SingleProxyMarker;
 import util.StringUtil;
 import util.location.CountryLocationCache;
 import util.location.LocationCache;
@@ -61,7 +61,7 @@ public class CountryMap extends AbstractLAKMap {
 	protected void showNodeMarkersOf(String confAcronym) {
 		for (String countryURL : RDFModel.getCountriesOfConference(confAcronym)) {
 			String countryName = StringUtil.parseCountryURL(countryURL);
-			for (ProxyMarker<NamedMarker> m : nodeMarkerManager) {
+			for (SingleProxyMarker<NamedMarker> m : nodeMarkerManager) {
 				if (m.getOriginal().getName().equals(countryName))
 					m.setHidden(false);
 			}
