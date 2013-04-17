@@ -149,6 +149,9 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 	
 	@Override
 	public boolean isInside(UnfoldingMap map, float checkX, float checkY) {
+		if (weightPercentage == 0)
+			return false;
+		
 		Location l1 = m1.getLocation();
 		Location l2 = m2.getLocation();
 		ScreenPosition  sposa = map.getScreenPosition(l1),
@@ -166,7 +169,7 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 		float	m = (ya - yb) / (xa - xb),
 				b = ya - m * xa,
 				d = (float) (Math.abs(checkY - m * checkX - b) / Math.sqrt(m*m + 1));
-		return d < this.strokeWeight;
+		return d < strokeWeight * weightPercentage;
 	}
 	
 	@Override
