@@ -119,6 +119,7 @@ public class KeywordMap extends PApplet {
 		}
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
 		keywordList.addItems(keywords);
+		
 	}
 
 	/**
