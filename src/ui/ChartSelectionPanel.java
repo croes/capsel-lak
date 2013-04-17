@@ -75,9 +75,9 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		void yearSelected(int year);
 
 		void yearUnselected(int year);
-		
+
 		void orgSelected(String university);
-		
+
 		void orgUnselected(String university);
 
 	}
@@ -314,7 +314,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		updateTaskManager.schedule(new Task("drawGraphs") {
 			@Override
 			public void execute() throws Throwable {
-				synchronized(lock) {
+				synchronized (lock) {
 					updatePending = false;
 				}
 				drawGraphs();
@@ -347,27 +347,52 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		} else
 			selectedYears = this.selectedYears;
 
-		if (selectedYears.size() == 1) {
-			if (selectedConferences.size() == 1) {
-				// one year, one conference
+		if (selectedConferences.size() == 1) {
+//			if (selectedYears.size() == 1) {
+//				// one year, one conference
+//
+//				String conference = selectedConferences.first();
+//				int year = selectedYears.first();
+//
+//				Collection<String> orgs = dataProvider.getOrganizationsForConference(conference, year);
+//
+//				SCSYData[] data = new SCSYData[orgs.size()];
+//
+//				Iterator<String> orgIter = orgs.iterator();
+//				for (int i = 0; orgIter.hasNext(); i++) {
+//					String org = orgIter.next();
+//					data[i] = new SCSYData(org, dataProvider.getOrganizationData(conference, org, year),
+//							Color.lightGray);
+//				}
+//				AbstractBarChart chart = new SingleConferenceSingleYearBarChart(conference, Y_AXIS_TITLE, data);
+//				chart.addMouseListener(this);
+//				newCharts.add(chart);
+//			} else {
+				// multiple years, one conference
 
 				String conference = selectedConferences.first();
-				int year = selectedYears.first();
+				SCMYData[] data = new SCMYData[selectedYears.size()];
 
-				Collection<String> orgs = dataProvider.getOrganizationsForConference(conference, year);
+				int i = 0;
+				for (int year : selectedYears) {
+					data[i] = new SCMYData(year, dataProvider.getConferenceData(conference, year));
 
-				SCSYData[] data = new SCSYData[orgs.size()];
-
-				Iterator<String> orgIter = orgs.iterator();
-				for (int i = 0; orgIter.hasNext(); i++) {
-					String org = orgIter.next();
-					data[i] = new SCSYData(org, dataProvider.getOrganizationData(conference, org, year),
-							Color.lightGray);
+					i++;
 				}
-				AbstractBarChart chart = new SingleConferenceSingleYearBarChart(conference, Y_AXIS_TITLE, data);
+
+				AbstractBarChart chart = new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE,
+						conferences.getColor(conference), data);
 				chart.addMouseListener(this);
 				newCharts.add(chart);
-			} else {
+
+				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears)) {
+					AbstractBarChart subChart = createSCMYGraph(org, conference, selectedYears);
+					subChart.addMouseListener(this);
+					newCharts.add(subChart);
+				}
+//			}
+		} else {
+			if (selectedYears.size() == 1) {
 				// one year, multiple conferences
 
 				int year = selectedYears.first();
@@ -384,33 +409,8 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 				chart.addMouseListener(this);
 				newCharts.add(chart);
 
-				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year)){
-					AbstractBarChart subChart = createMCSYGraph(org, selectedConferences, year); 
-					subChart.addMouseListener(this);
-					newCharts.add(subChart);
-				}
-			}
-		} else {
-			if (selectedConferences.size() == 1) {
-				// multiple years, one conference
-
-				String conference = selectedConferences.first();
-				SCMYData[] data = new SCMYData[selectedYears.size()];
-
-				int i = 0;
-				for (int year : selectedYears) {
-					data[i] = new SCMYData(year, dataProvider.getConferenceData(conference, year));
-
-					i++;
-				}
-
-				AbstractBarChart chart = new SingleConferenceMultipleYearBarChart("Total", Y_AXIS_TITLE, conferences
-						.getColor(conference), data); 
-				chart.addMouseListener(this);
-				newCharts.add(chart);
-
-				for (String org : dataProvider.getOrganizationsForConferences(conference, selectedYears)){
-					AbstractBarChart subChart = createSCMYGraph(org, conference, selectedYears);
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, year)) {
+					AbstractBarChart subChart = createMCSYGraph(org, selectedConferences, year);
 					subChart.addMouseListener(this);
 					newCharts.add(subChart);
 				}
@@ -441,7 +441,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 				chart.addMouseListener(this);
 				newCharts.add(chart);
 
-				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears)){
+				for (String org : dataProvider.getOrganizationsForConferences(selectedConferences, selectedYears)) {
 					AbstractBarChart subChart = createMCMYGraph(org, selectedConferences, selectedYears);
 					subChart.addMouseListener(this);
 					newCharts.add(subChart);
@@ -455,7 +455,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		//NOP
+		// NOP
 	}
 
 	@Override
@@ -471,7 +471,7 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	@Override
 	public void mouseExited(MouseEvent e) {
 		AbstractBarChart exitedChart = (AbstractBarChart) e.getSource();
-		logger.debug("mouse exited: %s",exitedChart.getChart().getTitle().getText());
+		logger.debug("mouse exited: %s", exitedChart.getChart().getTitle().getText());
 		Listener[] listeners = this.listeners.getListeners(Listener.class);
 		for (Listener l : listeners) {
 			l.orgUnselected(exitedChart.getFullTitle());
@@ -480,11 +480,11 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		//NOP
+		// NOP
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		//NOP
+		// NOP
 	}
 }

@@ -1,6 +1,7 @@
 package util;
 
 import java.io.IOException;
+import java.util.Set;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -22,7 +23,11 @@ public class StringUtil {
 		if (s == null || (s = s.trim()).length() == 0)
 			return s;
 
-		return duplicates.hasKey(s) ? duplicates.get(s).trim() : s.trim();
+		return duplicates.hasKey(s) ? duplicates.get(s).trim() : s;
+	}
+	
+	public static Set<String> getWrongStrings(String corrected) {
+		return duplicates.getKeys(corrected);
 	}
 	
 	public static String getString(Literal l) {

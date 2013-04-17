@@ -144,6 +144,10 @@ public class DataProvider implements ChartSelectionPanel.DataProvider, MapContro
 
 				String confAcronym = conference + Integer.toString(year, 10);
 				int data = RDFModel.getPaperCount(confAcronym, organization);
+				
+				for (String misspelledOrganization : StringUtil.getWrongStrings(organization))
+					data += RDFModel.getPaperCount(confAcronym, misspelledOrganization);
+				
 				organizationData.put(key, (double) data);
 				return data;
 			}

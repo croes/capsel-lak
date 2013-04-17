@@ -37,6 +37,8 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 	protected State state;
 
 	protected int countSelectedLines;
+	
+	private Color4f color;
 
 	public NamedMarker(String title, Location location) {
 		this(title, location, true);
@@ -47,13 +49,21 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		this.str = title;
 		this.animated = animated;
 		// make the marker black
-		color = highlightColor = highlightStrokeColor = strokeColor = 0;
+		color = new Color4f(BLACK);
 
 		opacity = 1;
 
 		state = State.POINT;
 		current = 0;
 		countSelectedLines = 0;
+	}
+	
+	@Override
+	public void setColor(int color) {
+		this.color.w = (color >> 24) & 0xFF;
+		this.color.x = (color >> 16) & 0xFF;
+		this.color.y = (color >>  8) & 0xFF;
+		this.color.z = (color >>  0) & 0xFF;
 	}
 
 	public void setHidden(boolean hidden) {
@@ -121,8 +131,8 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 			pg.pushStyle();
 
 			pg.strokeWeight(strokeWeight);
-			pg.fill(0, 0, 0, opacity * 255);
-			pg.stroke(0, 0, 0, opacity * 255);
+			pg.fill(color.x, color.y, color.z, color.w * opacity);
+			pg.stroke(0, 0, 0, 255 * opacity);
 
 			pg.ellipse((int) x, (int) y, radius, radius);
 
