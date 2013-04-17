@@ -43,3 +43,11 @@
 + Countrymap samenbrengen met UniversityMap (met animatie)
 + Edges toevoegen aan lakmap
 + Treshold tussen country en organisation markers aanpassen
+
+## Evaluatie
+
+### Robin
+
+* edges vallen niet echt op tussen de lijnen op de kaart -> andere kaart of andere kleur vr de edges
+* controle past beter vanboven, cf. hun visualisation. De charts kunnen echter beter wel vanonder (of rechts) blijven
+** geen uitgesproken mening over vanonder/rechts
