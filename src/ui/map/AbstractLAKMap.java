@@ -20,7 +20,9 @@ import util.task.Task;
 import util.task.TaskManager;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
+import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
 import de.fhpotsdam.unfolding.marker.Marker;
+import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
 
@@ -44,10 +46,17 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	protected final DataProvider dataProvider;
 
 	private final boolean drawFPS;
-
+	
+	private final AbstractMapProvider mapProvider;
+	
 	public AbstractLAKMap(DataProvider data, boolean drawFPS) {
+		this(data, drawFPS, MapDisplayFactory.getDefaultProvider());
+	}
+
+	public AbstractLAKMap(DataProvider data, boolean drawFPS, AbstractMapProvider mapProvider) {
 		dataProvider = data;
 		this.drawFPS = drawFPS;
+		this.mapProvider = mapProvider;
 
 		mapTaskManager = new TaskManager("MapTaskManager", 1);
 
@@ -71,7 +80,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		Ani.init(this);
 
 		logger.debug("Creating map");
-		map = new UnfoldingMap(this);
+		map = new UnfoldingMap(this, mapProvider);
 		map.setTweening(true);
 
 		map.zoomAndPanTo(new Location(20, 0), 3);

@@ -16,4 +16,8 @@ lib/sqlitejdbc-v056.jar
 lib/unfolding.0.9.beta.jar
 libNative
 
+# cached map data
+data/mapdata
+
+# build.xml for log-src, contains some hard-coded stuff
 build.xml

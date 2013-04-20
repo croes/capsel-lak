@@ -18,8 +18,10 @@ import processing.core.PApplet;
 import ui.ChartSelectionPanel;
 import ui.map.AbstractLAKMap;
 import ui.map.SwitchingLAKMap;
+import ui.tile.CachedMapProvider;
 import controller.MapController;
 import controller.MapDataProvider;
+import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
 
 public class Main {
 
@@ -28,9 +30,11 @@ public class Main {
 	private static final String organizationLocationFile = "data/organisations.csv";
 	private static final String countryLocationFile = "data/countries.csv";
 	private static final String organizationCountryFile = "data/organisation_country_map.csv";
+	private static final String mapDataDirectory = "mapdata";
 
 	private static final boolean drawFPS = true;
-	private static final boolean horizontal = true;
+	private static final boolean horizontal = false;
+	private static final boolean useCachedTileProvider = true;
 
 	public static void main(String[] args) {
 		logger.info("Starting...");
@@ -47,7 +51,16 @@ public class Main {
 			return;
 		}
 
-		AbstractLAKMap<?, ?> map = new SwitchingLAKMap(dataProvider, drawFPS);
+		AbstractLAKMap<?, ?> map;
+		if (useCachedTileProvider) {
+			CachedMapProvider mapProvider = new CachedMapProvider(mapDataDirectory,
+					MapDisplayFactory.getDefaultProvider());
+			map = new SwitchingLAKMap(dataProvider, drawFPS, mapProvider);
+			mapProvider.setPApplet(map);
+		} else {
+			map = new SwitchingLAKMap(dataProvider, drawFPS);
+		}
+
 		MapController mapController = new MapController(dataProvider, map);
 		ChartSelectionPanel chartSelectionPanel = new ChartSelectionPanel(dataProvider, horizontal);
 		chartSelectionPanel.addListener(mapController);
@@ -71,11 +84,11 @@ public class Main {
 			}
 		});
 
-		//displayDevice.setFullScreenWindow(frame);
+		// displayDevice.setFullScreenWindow(frame);
 		frame.setSize(1200, 800);
 		RefineryUtilities.centerFrameOnScreen(frame);
 		frame.setVisible(true);
-		
+
 		frame.setResizable(false);
 
 		// init processing

@@ -24,6 +24,7 @@ import de.fhpotsdam.unfolding.events.MapEventListener;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
+import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
 public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, SwitchingLAKMap.Edge> {
@@ -134,6 +135,12 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	public SwitchingLAKMap(DataProvider data, boolean drawFPS) {
 		super(data, drawFPS);
 		showCountry = false; // set to true in setup!!
+		cooperationData = null;
+	}
+	
+	public SwitchingLAKMap(DataProvider data, boolean drawFPS, AbstractMapProvider mapProvider) {
+		super(data, drawFPS, mapProvider);
+		showCountry = false; // set to treu in setup!!
 		cooperationData = null;
 	}
 
