@@ -35,12 +35,21 @@ public class KeywordMap extends PApplet {
 	private static final int WIDTH = 1040;
 	private static final int HEIGHT = 720;
 
-	private static final int CONFLIST_X = 50, CONFLIST_Y = 50, CONFLIST_W = 120, CONFLIST_H = 120, CONFLIST_ITEMH = 15;
+	private static final int 	CONFLIST_X = 50,
+								CONFLIST_Y = 50,
+								CONFLIST_W = 120,
+								CONFLIST_H = 120,
+								CONFLIST_ITEMH = 15;
 
-	private static final int KEYWLIST_W = 140, KEYWLIST_H = HEIGHT - 2 * CONFLIST_Y, KEYWLIST_Y = CONFLIST_Y,
-			KEYWLIST_X = WIDTH - KEYWLIST_W, KEYWLIST_ITEMH = 20;
+	private static final int	KEYWLIST_W = 140,
+								KEYWLIST_H = HEIGHT - 2 * CONFLIST_Y,
+								KEYWLIST_Y = CONFLIST_Y,
+								KEYWLIST_X = WIDTH - KEYWLIST_W,
+								KEYWLIST_ITEMH = 20;
 
-	private static final int DEFAULT_MARKER_COLOR = 0x50505050, HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050;
+	private static final int 	DEFAULT_MARKER_COLOR = 0x50505050,
+								HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050,
+								LIST_HIGHLIGHT_COLOR = 0xFF660000;
 
 	/**
 	 * Generated serial version ID
@@ -128,7 +137,7 @@ public class KeywordMap extends PApplet {
 	private void setupGUI() {
 		ControlP5 cp5 = new ControlP5(this);
 		conflist = cp5.addListBox("Conferences").setPosition(CONFLIST_X, CONFLIST_Y).setSize(CONFLIST_W, CONFLIST_H)
-				.setBarHeight(CONFLIST_ITEMH).setItemHeight(CONFLIST_ITEMH).setColorActive(0x50505050).setValue(0f);
+				.setBarHeight(CONFLIST_ITEMH).setItemHeight(CONFLIST_ITEMH).setColorActive(0xFFFFFF).setValue(0f);
 
 		cp5.addButton("ShowAllButton").setCaptionLabel("Show all").setValue(0).setPosition(200, 35).setSize(120, 19);
 
@@ -142,6 +151,7 @@ public class KeywordMap extends PApplet {
 				if (e.isGroup() && e.getGroup().getName().equals("Conferences")) {
 					int idx = (int) e.getGroup().getValue();
 					String acro = conflist.getItem(idx).getName();
+					markItem(conflist, idx);
 					currConf = acro;
 					showOnlyConf(acro);
 				} else if (e.isGroup() && e.getGroup().getName().equals("Keywords")) {
@@ -149,11 +159,21 @@ public class KeywordMap extends PApplet {
 					String keyword = keywordList.getItem(idx).getName();
 					//logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
 					markMarkers(currConf, keyword);
+					markItem(keywordList, idx);
 				} else if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
 					showAll();
+					markItem(conflist, -1);
+					markItem(keywordList, -1);
 				}
 			}
 		});
+	}
+	
+	private void markItem(ListBox list, int idx) {
+		//standard bg = (2,52,77) 0x002344D
+		for(int i=0;i < list.getListBoxItems().length;i++){
+			list.getItem(i).setColorBackground(i==idx ? LIST_HIGHLIGHT_COLOR : 0xFF02344D);
+		}
 	}
 
 	/**
