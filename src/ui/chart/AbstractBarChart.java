@@ -50,6 +50,8 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 		if(title.length() > 28){
 			smallTitle = title.substring(0, 24);
 			smallTitle += "...";
+		} else if(title.length() == 0){
+			smallTitle = "-";
 		} else{
 			smallTitle = title;
 		}
