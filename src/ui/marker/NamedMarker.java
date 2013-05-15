@@ -132,7 +132,7 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 
 			pg.strokeWeight(strokeWeight);
 			pg.fill(color.x, color.y, color.z, color.w * opacity);
-			pg.stroke(0, 0, 0, 255 * opacity);
+			pg.stroke(strokeColor);
 
 			pg.ellipse((int) x, (int) y, radius, radius);
 

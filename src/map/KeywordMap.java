@@ -97,9 +97,8 @@ public class KeywordMap extends PApplet {
 			private boolean isInsideRect(float x, float y, float w, float h, float checkX, float checkY) {
 				return (checkX >= x) && (checkX <= x + w) && (checkY >= y) && (checkY <= y + h);
 			}
-		}; // , 0, 200, this.width, this.height-200);
-		map.setTweening(true); // (doesn't work). it does now, what changed?
-								// smooth()?
+		};
+		map.setTweening(true);
 		map.zoomAndPanTo(new Location(20, 0), 3);
 		MapUtils.createDefaultEventDispatcher(this, map);
 
@@ -196,6 +195,7 @@ public class KeywordMap extends PApplet {
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
 		keywordList.addItems(keywords);
 		currConf = null;
+		clearMarkedMarkers();
 	}
 
 	/**
@@ -213,19 +213,28 @@ public class KeywordMap extends PApplet {
 	}
 
 	private void clearMarkedMarkers() {
-		for (Marker m : orgMarkMan.getMarkers()) {
-			m.setColor(DEFAULT_MARKER_COLOR);
+		for (NamedMarker nm : orgMarkMan.getMarkers()) {
+			nm.setColor(DEFAULT_MARKER_COLOR);
+			nm.setRadius(10);
+			nm.setStrokeColor(0xFF000000);
 		}
 	}
 
 	private void markMarkers(String confAcronym, String keyword) {
 		clearMarkedMarkers();
+		for(NamedMarker nm : orgMarkMan.getMarkers()){
+			nm.setColor((DEFAULT_MARKER_COLOR & 0x00FFFFFF) | 0x25000000);
+			nm.setStrokeColor(0x30000000);
+		}
 		List<String> orgnames = RDFModel.getResultsAsStrings(RDFModel.getOrgsWithKeyword(confAcronym, keyword),
 				"orgname");
 		for (String orgName : orgnames) {
 			NamedMarker nm = getMarkerWithName(orgName);
-			if(nm != null)
+			if(nm != null){
 				nm.setColor(HIGHLIGHTED_MARKER_COLOR);
+				nm.setStrokeColor(0xFF000000);
+				nm.setRadius(20);
+			}
 		}
 	}
 
