@@ -216,6 +216,10 @@ public class KeywordMap extends PApplet {
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(confAcronym),
 				"keyword");
 		keywordList.addItems(keywords);
+		if(keywords.isEmpty()){
+			keywordList.addItem("NO KEYWORDS FOUND!", 0);
+			keywordList.getItem(0).setColorBackground(0xFFFF0000);
+		}
 		markItem(conflist, confAcronym);
 	}
 
