@@ -136,13 +136,25 @@ public class KeywordMap extends PApplet {
 	 */
 	private void setupGUI() {
 		ControlP5 cp5 = new ControlP5(this);
-		conflist = cp5.addListBox("Conferences").setPosition(CONFLIST_X, CONFLIST_Y).setSize(CONFLIST_W, CONFLIST_H)
-				.setBarHeight(CONFLIST_ITEMH).setItemHeight(CONFLIST_ITEMH).setColorActive(0xFFFFFF).setValue(0f);
+		conflist = 	 cp5.addListBox("Conferences")
+						.setPosition(CONFLIST_X, CONFLIST_Y)
+						.setSize(CONFLIST_W, CONFLIST_H)
+						.setBarHeight(CONFLIST_ITEMH)
+						.setItemHeight(CONFLIST_ITEMH)
+						.setColorActive(0xFFFFFF)
+						.setValue(0f);
 
-		cp5.addButton("ShowAllButton").setCaptionLabel("Show all").setValue(0).setPosition(200, 35).setSize(120, 19);
+		cp5.addButton("ShowAllButton")
+			.setCaptionLabel("Clear selection")
+			.setValue(0)
+			.setPosition(200, 35)
+			.setSize(120, 19);
 
-		keywordList = cp5.addListBox("Keywords").setPosition(KEYWLIST_X, KEYWLIST_Y).setSize(KEYWLIST_W, KEYWLIST_H)
-				.setBarHeight(KEYWLIST_ITEMH).setItemHeight(KEYWLIST_ITEMH);
+		keywordList =    cp5.addListBox("Keywords")
+							.setPosition(KEYWLIST_X, KEYWLIST_Y)
+							.setSize(KEYWLIST_W, KEYWLIST_H)
+							.setBarHeight(KEYWLIST_ITEMH)
+							.setItemHeight(KEYWLIST_ITEMH);
 
 		// Listener to control selection events.
 		cp5.addListener(new ControlListener() {
@@ -157,7 +169,6 @@ public class KeywordMap extends PApplet {
 				} else if (e.isGroup() && e.getGroup().getName().equals("Keywords")) {
 					int idx = (int) e.getGroup().getValue();
 					String keyword = keywordList.getItem(idx).getName();
-					//logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
 					markMarkers(currConf, keyword);
 					markItem(keywordList, idx);
 				} else if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
