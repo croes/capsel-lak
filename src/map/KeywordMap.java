@@ -49,7 +49,7 @@ public class KeywordMap extends PApplet {
 
 	private static final int 	DEFAULT_MARKER_COLOR = 0x50505050,
 								HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050,
-								LIST_HIGHLIGHT_COLOR = 0xFF660000;
+								LIST_HIGHLIGHT_COLOR = 0xFFAA0055;
 
 	/**
 	 * Generated serial version ID
@@ -299,8 +299,12 @@ public class KeywordMap extends PApplet {
 		hitMarker.setSelected(!hitMarker.isSelected());
 		if (hitMarker.isSelected()) {
 			keywordList.clear();
-			keywordList
-					.addItems(RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword"));
+			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword");
+			keywordList.addItems(keywords);
+			if(keywords.isEmpty()){
+				keywordList.addItem("NO KEYWORDS FOUND!", 0);
+				keywordList.getItem(0).setColorBackground(0xFFFF0000);
+			}
 		} else {
 			keywordList.clear();
 			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(currConf),
