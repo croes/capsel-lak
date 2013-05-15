@@ -179,6 +179,12 @@ public class KeywordMap extends PApplet {
 		});
 	}
 	
+	private void markItem(ListBox list, String name){
+		for(int i=0;i < list.getListBoxItems().length;i++){
+			list.getItem(i).setColorBackground(list.getItem(i).getName().equals(name) ? LIST_HIGHLIGHT_COLOR : 0xFF02344D);
+		}
+	}
+	
 	private void markItem(ListBox list, int idx) {
 		//standard bg = (2,52,77) 0x002344D
 		for(int i=0;i < list.getListBoxItems().length;i++){
@@ -210,6 +216,7 @@ public class KeywordMap extends PApplet {
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(confAcronym),
 				"keyword");
 		keywordList.addItems(keywords);
+		markItem(conflist, confAcronym);
 	}
 
 	private void clearMarkedMarkers() {
@@ -318,6 +325,10 @@ public class KeywordMap extends PApplet {
 			return;
 		hitMarker.setSelected(!hitMarker.isSelected());
 		if (hitMarker.isSelected()) {
+			for(NamedMarker nm : orgMarkMan.getMarkers()){
+				if(nm != hitMarker)
+					nm.setSelected(false);
+			}
 			keywordList.clear();
 			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword");
 			keywordList.addItems(keywords);
@@ -330,6 +341,8 @@ public class KeywordMap extends PApplet {
 			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(currConf),
 					"keyword");
 			keywordList.addItems(keywords);
+			clearMarkedMarkers();
+			markItem(conflist, currConf);
 		}
 	}
 
