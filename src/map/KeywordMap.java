@@ -23,7 +23,6 @@ import controlP5.ControlP5;
 import controlP5.ListBox;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
-import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.looksgood.ani.Ani;
@@ -35,12 +34,21 @@ public class KeywordMap extends PApplet {
 	private static final int WIDTH = 1040;
 	private static final int HEIGHT = 720;
 
-	private static final int CONFLIST_X = 50, CONFLIST_Y = 50, CONFLIST_W = 120, CONFLIST_H = 120, CONFLIST_ITEMH = 15;
+	private static final int 	CONFLIST_X = 50,
+								CONFLIST_Y = 50,
+								CONFLIST_W = 120,
+								CONFLIST_H = 120,
+								CONFLIST_ITEMH = 15;
 
-	private static final int KEYWLIST_W = 140, KEYWLIST_H = HEIGHT - 2 * CONFLIST_Y, KEYWLIST_Y = CONFLIST_Y,
-			KEYWLIST_X = WIDTH - KEYWLIST_W, KEYWLIST_ITEMH = 20;
+	private static final int	KEYWLIST_W = 140,
+								KEYWLIST_H = HEIGHT - 2 * CONFLIST_Y,
+								KEYWLIST_Y = CONFLIST_Y,
+								KEYWLIST_X = WIDTH - KEYWLIST_W,
+								KEYWLIST_ITEMH = 20;
 
-	private static final int DEFAULT_MARKER_COLOR = 0x50505050, HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050;
+	private static final int 	DEFAULT_MARKER_COLOR = 0x50505050,
+								HIGHLIGHTED_MARKER_COLOR = 0xFFFF5050,
+								LIST_HIGHLIGHT_COLOR = 0xFFAA0055;
 
 	/**
 	 * Generated serial version ID
@@ -88,9 +96,8 @@ public class KeywordMap extends PApplet {
 			private boolean isInsideRect(float x, float y, float w, float h, float checkX, float checkY) {
 				return (checkX >= x) && (checkX <= x + w) && (checkY >= y) && (checkY <= y + h);
 			}
-		}; // , 0, 200, this.width, this.height-200);
-		map.setTweening(true); // (doesn't work). it does now, what changed?
-								// smooth()?
+		};
+		map.setTweening(true);
 		map.zoomAndPanTo(new Location(20, 0), 3);
 		MapUtils.createDefaultEventDispatcher(this, map);
 
@@ -127,13 +134,25 @@ public class KeywordMap extends PApplet {
 	 */
 	private void setupGUI() {
 		ControlP5 cp5 = new ControlP5(this);
-		conflist = cp5.addListBox("Conferences").setPosition(CONFLIST_X, CONFLIST_Y).setSize(CONFLIST_W, CONFLIST_H)
-				.setBarHeight(CONFLIST_ITEMH).setItemHeight(CONFLIST_ITEMH).setColorActive(0x50505050).setValue(0f);
+		conflist = 	 cp5.addListBox("Conferences")
+						.setPosition(CONFLIST_X, CONFLIST_Y)
+						.setSize(CONFLIST_W, CONFLIST_H)
+						.setBarHeight(CONFLIST_ITEMH)
+						.setItemHeight(CONFLIST_ITEMH)
+						.setColorActive(0xFFFFFF)
+						.setValue(0f);
 
-		cp5.addButton("ShowAllButton").setCaptionLabel("Show all").setValue(0).setPosition(200, 35).setSize(120, 19);
+		cp5.addButton("ShowAllButton")
+			.setCaptionLabel("Clear selection")
+			.setValue(0)
+			.setPosition(200, 35)
+			.setSize(120, 19);
 
-		keywordList = cp5.addListBox("Keywords").setPosition(KEYWLIST_X, KEYWLIST_Y).setSize(KEYWLIST_W, KEYWLIST_H)
-				.setBarHeight(KEYWLIST_ITEMH).setItemHeight(KEYWLIST_ITEMH);
+		keywordList =    cp5.addListBox("Keywords")
+							.setPosition(KEYWLIST_X, KEYWLIST_Y)
+							.setSize(KEYWLIST_W, KEYWLIST_H)
+							.setBarHeight(KEYWLIST_ITEMH)
+							.setItemHeight(KEYWLIST_ITEMH);
 
 		// Listener to control selection events.
 		cp5.addListener(new ControlListener() {
@@ -142,18 +161,34 @@ public class KeywordMap extends PApplet {
 				if (e.isGroup() && e.getGroup().getName().equals("Conferences")) {
 					int idx = (int) e.getGroup().getValue();
 					String acro = conflist.getItem(idx).getName();
+					markItem(conflist, idx);
 					currConf = acro;
 					showOnlyConf(acro);
 				} else if (e.isGroup() && e.getGroup().getName().equals("Keywords")) {
 					int idx = (int) e.getGroup().getValue();
 					String keyword = keywordList.getItem(idx).getName();
-					//logger.info("Marking keyword: " + keyword + " from acro:" + currConf);
 					markMarkers(currConf, keyword);
+					markItem(keywordList, idx);
 				} else if (!e.isGroup() && e.getController().getName().equals("ShowAllButton")) {
 					showAll();
+					markItem(conflist, -1);
+					markItem(keywordList, -1);
 				}
 			}
 		});
+	}
+	
+	private void markItem(ListBox list, String name){
+		for(int i=0;i < list.getListBoxItems().length;i++){
+			list.getItem(i).setColorBackground(list.getItem(i).getName().equals(name) ? LIST_HIGHLIGHT_COLOR : 0xFF02344D);
+		}
+	}
+	
+	private void markItem(ListBox list, int idx) {
+		//standard bg = (2,52,77) 0x002344D
+		for(int i=0;i < list.getListBoxItems().length;i++){
+			list.getItem(i).setColorBackground(i==idx ? LIST_HIGHLIGHT_COLOR : 0xFF02344D);
+		}
 	}
 
 	/**
@@ -165,6 +200,7 @@ public class KeywordMap extends PApplet {
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywords(), "keyword");
 		keywordList.addItems(keywords);
 		currConf = null;
+		clearMarkedMarkers();
 	}
 
 	/**
@@ -179,22 +215,36 @@ public class KeywordMap extends PApplet {
 		List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(confAcronym),
 				"keyword");
 		keywordList.addItems(keywords);
+		if(keywords.isEmpty()){
+			keywordList.addItem("NO KEYWORDS FOUND!", 0);
+			keywordList.getItem(0).setColorBackground(0xFFFF0000);
+		}
+		markItem(conflist, confAcronym);
 	}
 
 	private void clearMarkedMarkers() {
-		for (Marker m : orgMarkMan.getMarkers()) {
-			m.setColor(DEFAULT_MARKER_COLOR);
+		for (NamedMarker nm : orgMarkMan.getMarkers()) {
+			nm.setColor(DEFAULT_MARKER_COLOR);
+			nm.setRadius(10);
+			nm.setStrokeColor(0xFF000000);
 		}
 	}
 
 	private void markMarkers(String confAcronym, String keyword) {
 		clearMarkedMarkers();
+		for(NamedMarker nm : orgMarkMan.getMarkers()){
+			nm.setColor((DEFAULT_MARKER_COLOR & 0x00FFFFFF) | 0x25000000);
+			nm.setStrokeColor(0x30000000);
+		}
 		List<String> orgnames = RDFModel.getResultsAsStrings(RDFModel.getOrgsWithKeyword(confAcronym, keyword),
 				"orgname");
 		for (String orgName : orgnames) {
 			NamedMarker nm = getMarkerWithName(orgName);
-			if(nm != null)
+			if(nm != null){
 				nm.setColor(HIGHLIGHTED_MARKER_COLOR);
+				nm.setStrokeColor(0xFF000000);
+				nm.setRadius(20);
+			}
 		}
 	}
 
@@ -278,14 +328,24 @@ public class KeywordMap extends PApplet {
 			return;
 		hitMarker.setSelected(!hitMarker.isSelected());
 		if (hitMarker.isSelected()) {
+			for(NamedMarker nm : orgMarkMan.getMarkers()){
+				if(nm != hitMarker)
+					nm.setSelected(false);
+			}
 			keywordList.clear();
-			keywordList
-					.addItems(RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword"));
+			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getKeywordsOfOrg(hitMarker.getName()), "keyword");
+			keywordList.addItems(keywords);
+			if(keywords.isEmpty()){
+				keywordList.addItem("NO KEYWORDS FOUND!", 0);
+				keywordList.getItem(0).setColorBackground(0xFFFF0000);
+			}
 		} else {
 			keywordList.clear();
 			List<String> keywords = RDFModel.getResultsAsStrings(RDFModel.getAllKeywordsFromConference(currConf),
 					"keyword");
 			keywordList.addItems(keywords);
+			clearMarkedMarkers();
+			markItem(conflist, currConf);
 		}
 	}
 
