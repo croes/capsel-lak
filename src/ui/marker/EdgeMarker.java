@@ -18,7 +18,7 @@ public class EdgeMarker<E extends NamedMarker> extends SimpleLinesMarker {
 	private static final float ANI_DURATION = .5f;
 	private static final int DEFAULT_STROKE_WEIGHT = 1;
 	
-	private static final int COLOR = 0x50505050;
+	private static final int COLOR = 0x505050FF;
 	private static final int HIGHLIGHT_COLOR = 0xFFFF0000;
 	
 	private E m1, m2;

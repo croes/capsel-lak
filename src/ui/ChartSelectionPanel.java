@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Collection;
 import java.util.EventListener;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
@@ -27,7 +26,6 @@ import ui.chart.BarMouseListener;
 import ui.chart.MultipleConferenceMultipleYearBarChart;
 import ui.chart.MultipleConferenceSingleYearBarChart;
 import ui.chart.SingleConferenceMultipleYearBarChart;
-import ui.chart.SingleConferenceSingleYearBarChart;
 import ui.selection.ColoredItemChooser;
 import ui.selection.ColoredSelectionChangedListener;
 import ui.selection.YearChooser;
@@ -80,12 +78,6 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 
 		void orgUnselected(String university);
 
-	}
-
-	private static class SCSYData extends SingleConferenceSingleYearBarChart.Data {
-		public SCSYData(String organization, double data, Color color) {
-			super(organization, data, color);
-		}
 	}
 
 	private static class SCMYData extends SingleConferenceMultipleYearBarChart.Data {

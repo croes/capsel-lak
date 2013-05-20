@@ -14,7 +14,7 @@ public class CachedMapProvider extends AbstractMapProvider {
 	private static final Logger logger = LogManager.getLogger(CachedMapProvider.class);
 
 	private final AbstractMapProvider provider;
-	private  PApplet p;
+	private PApplet p;
 
 	private final String fileFormat;
 	
@@ -54,6 +54,11 @@ public class CachedMapProvider extends AbstractMapProvider {
 		
 		logger.debug("Image not found yet, loading from URL");
 		PImage image = getTileFromUrl(provider.getTileUrls(coordinate));
+		
+		if (image == null) {
+			logger.error("Loading the image from URL failed");
+			return null;
+		}
 		
 		logger.debug("Storing image @ %s", imageFile.getPath());
 		PApplet.createPath(imageFile);

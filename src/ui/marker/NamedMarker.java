@@ -20,7 +20,7 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 	protected static final float ANI_DURATION = .5f;
 
 	protected static final Color4f BLACK = new Color4f(0, 0, 0, 255);
-	protected static final Color4f CIRCLE_COLOR = new Color4f(200, 125, 200, 200);
+	protected static final Color4f CIRCLE_COLOR = new Color4f(0x50, 0x50, 0x80, 200);
 
 	protected static final Color4f OVERLAY_COLOR = new Color4f(255, 255, 255, 127.5f);
 	protected static final float OVERLAY_MARGIN = 2;
