@@ -206,6 +206,8 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		// do the hard work
 
 		final Map<StringCouple, Integer> edgeData = getCooperationData();
+		
+		// show the results
 
 		for (ProxyMarker<Node> m : nodeMarkerManager) {
 			m.getOriginal().switchMarker(showCountry);

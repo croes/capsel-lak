@@ -56,6 +56,8 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 		state = State.POINT;
 		current = 0;
 		countSelectedLines = 0;
+		
+		strokeColor = -1; // 0xFFFFFFFF; == white
 	}
 	
 	@Override
@@ -132,7 +134,11 @@ public class NamedMarker extends SimplePointMarker implements LineSelectableMark
 
 			pg.strokeWeight(strokeWeight);
 			pg.fill(color.x, color.y, color.z, color.w * opacity);
-			pg.stroke(strokeColor);
+			if (strokeColor == -1) {
+				pg.stroke(color.x, color.y, color.z, color.w * opacity);
+			} else {
+				pg.stroke(strokeColor);
+			}
 
 			pg.ellipse((int) x, (int) y, radius, radius);
 
