@@ -32,7 +32,7 @@ public class Main {
 	private static final String organizationCountryFile = "data/organisation_country_map.csv";
 	private static final String mapDataDirectory = "mapdata";
 
-	private static final boolean drawFPS = true;
+	private static final boolean drawFPS = false;
 	private static final boolean horizontal = false;
 	private static final boolean useCachedTileProvider = true;
 
