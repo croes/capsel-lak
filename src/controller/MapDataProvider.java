@@ -22,7 +22,7 @@ import com.hp.hpl.jena.query.ResultSet;
 
 import de.fhpotsdam.unfolding.geo.Location;
 
-public class MapDataProvider extends DataProvider implements ui.map.DataProvider {
+public class MapDataProvider extends ChartDataProvider implements ui.map.DataProvider {
 	
 	private static final Logger logger = LogManager.getLogger(MapDataProvider.class);
 

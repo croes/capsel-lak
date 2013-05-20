@@ -17,6 +17,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.event.EventListenerList;
 
+import org.jfree.chart.ChartMouseEvent;
+
 import log.LogManager;
 import log.Logger;
 import ui.chart.AbstractBarChart;
@@ -77,6 +79,8 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 		void orgSelected(String university);
 
 		void orgUnselected(String university);
+		
+		void orgClicked(String organization);
 
 	}
 
@@ -240,6 +244,14 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	@Override
 	public void mouseClick(BarMouseEvent event) {
 		// TODO do something with this?
+	}
+	
+	@Override
+	public void mouseChartClick(ChartMouseEvent event, String chartTitle) {
+		Listener[] listeners = this.listeners.getListeners(Listener.class);
+		for (Listener l : listeners) {
+			l.orgClicked(chartTitle);
+		}
 	}
 
 	private AbstractBarChart createSCMYGraph(String organization, String conference, Collection<Integer> years) {
@@ -478,5 +490,9 @@ public class ChartSelectionPanel extends JPanel implements YearSelectionListener
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// NOP
+	}
+	
+	public void scrollToChartOfOrganization(String organization) {
+		charts.scrollToChartOfOrganization(organization);
 	}
 }

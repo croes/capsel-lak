@@ -20,9 +20,9 @@ import com.hp.hpl.jena.sparql.vocabulary.FOAF;
  * FIXME K.U.Leuven and KULeuven are both changed to KU Leuven by StringUtil,
  * resulting in wrong results !!!
  */
-public class DataProvider implements ChartSelectionPanel.DataProvider, MapController.DataProvider {
+public class ChartDataProvider implements ChartSelectionPanel.DataProvider, MapController.DataProvider {
 
-	private static final Logger logger = LogManager.getLogger(DataProvider.class);
+	private static final Logger logger = LogManager.getLogger(ChartDataProvider.class);
 
 	protected static class ConfYearCouple {
 		protected final String conference;
@@ -96,7 +96,7 @@ public class DataProvider implements ChartSelectionPanel.DataProvider, MapContro
 	protected final Map<ConfYearCouple, SortedSet<String>> conferenceOrganizationMap;
 	protected final Map<ConfYearOrgTriple, Double> organizationData;
 
-	public DataProvider() {
+	public ChartDataProvider() {
 		conferences = new TreeSet<>();
 		conferenceData = new HashMap<>();
 		organizationData = new HashMap<>();

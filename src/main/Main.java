@@ -19,6 +19,7 @@ import ui.ChartSelectionPanel;
 import ui.map.AbstractLAKMap;
 import ui.map.SwitchingLAKMap;
 import ui.tile.CachedMapProvider;
+import controller.ChartController;
 import controller.MapController;
 import controller.MapDataProvider;
 import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
@@ -64,6 +65,9 @@ public class Main {
 		MapController mapController = new MapController(dataProvider, map);
 		ChartSelectionPanel chartSelectionPanel = new ChartSelectionPanel(dataProvider, horizontal);
 		chartSelectionPanel.addListener(mapController);
+		
+		ChartController chartController = new ChartController(chartSelectionPanel);
+		map.addListener(chartController);
 
 		// init graphics
 		GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();

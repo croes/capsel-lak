@@ -164,7 +164,7 @@ public class MapController implements ChartSelectionPanel.Listener {
 	private void scheduleUpdateSelectedOrg(final String organization, final boolean selected) {
 		mapTaskManager.schedule(new Task("SelectedOrgUpdate"){
 			@Override
-			public void execute() throws Throwable {
+			public void execute() {
 				if (selected)
 					map.selectOrg(organization);
 				else
@@ -180,6 +180,16 @@ public class MapController implements ChartSelectionPanel.Listener {
 	@Override
 	public void orgUnselected(String university) {
 		scheduleUpdateSelectedOrg(university, false);
+	}
+
+	@Override
+	public void orgClicked(final String organization) {
+		mapTaskManager.schedule(new Task("OrgClicked") {
+
+			@Override
+			public void execute() throws Throwable {
+				map.panToOrganization(organization);
+			}});
 	}
 
 }

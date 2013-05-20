@@ -389,6 +389,15 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 	public void selectOrg(String selectedUniversity) {
 		getNodeMarkerWithName(selectedUniversity).setSelected(true);
 	}
+	
+	@Override
+	public void panToOrganization(String organization) {
+		ProxyMarker<Node> marker = getNodeMarkerWithName(organization);
+		
+		if (marker.getMarkerCount() > 0) {
+			map.panTo(marker.getOriginal().getLocation());
+		}
+	}
 
 	@Override
 	public void unselectOrg(String unselectedUniversity) {
@@ -465,6 +474,14 @@ public class SwitchingLAKMap extends AbstractLAKMap<SwitchingLAKMap.Node, Switch
 		}
 
 		return new GroupedProxyMarker<>(nodes);
+	}
+	
+	@Override
+	public void mouseClicked() {
+		if (showCountry)
+			return;
+		
+		super.mouseClicked();
 	}
 
 }

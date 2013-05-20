@@ -3,9 +3,12 @@ package ui.map;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Collection;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.event.EventListenerList;
 
 import log.LogManager;
 import log.Logger;
@@ -15,6 +18,7 @@ import ui.marker.NamedMarker;
 import ui.marker.SelectableMarkerManager;
 import ui.marker.proxy.EmptyProxyMarker;
 import ui.marker.proxy.ProxyMarker;
+import ui.marker.proxy.SingleProxyMarker;
 import util.StringCouple;
 import util.task.Task;
 import util.task.TaskManager;
@@ -28,6 +32,10 @@ import de.looksgood.ani.Ani;
 
 public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends EdgeMarker<Node>> extends PApplet implements
 		ComponentListener {
+	
+	public static interface Listener extends EventListener {
+		void organizationClicked(String organization);
+	}
 
 	private static final long serialVersionUID = 7338377844735009681L;
 
@@ -49,11 +57,15 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 	
 	private final AbstractMapProvider mapProvider;
 	
+	protected final EventListenerList listeners;
+	
 	public AbstractLAKMap(DataProvider data, boolean drawFPS) {
 		this(data, drawFPS, MapDisplayFactory.getDefaultProvider());
 	}
 
 	public AbstractLAKMap(DataProvider data, boolean drawFPS, AbstractMapProvider mapProvider) {
+		listeners = new EventListenerList();
+		
 		dataProvider = data;
 		this.drawFPS = drawFPS;
 		this.mapProvider = mapProvider;
@@ -125,6 +137,14 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		stroke(0xFFEEEEEE);
 		fill(0xFFEEEEEE);
 		text(s, 15, 20);
+	}
+	
+	public final void addListener(Listener listener) {
+		listeners.add(Listener.class, listener);
+	}
+	
+	public final void removeListener(Listener listener) {
+		listeners.remove(Listener.class, listener);
 	}
 
 	protected final void storeNodeMarker(Node marker) {
@@ -203,6 +223,8 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 
 	public abstract void unselectOrg(String unselectedUniversity);
 	
+	public abstract void panToOrganization(String organization);
+	
 	protected final void schedule(Task task) {
 		mapTaskManager.schedule(task);
 	}
@@ -217,7 +239,7 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 		final List<? extends Marker> hitNodeMarkers = nodeMarkerManager.getHitMarkers(mouseX, mouseY);
 		schedule(new Task("mouseMoved") {
 			@Override
-			public void execute() throws Throwable {
+			public void execute() {
 
 				for (Marker m : edgeMarkerManager) {
 					m.setSelected(hitEdgeMarkers.contains(m));
@@ -229,6 +251,28 @@ public abstract class AbstractLAKMap<Node extends NamedMarker, Edge extends Edge
 			}
 
 		});
+	}
+	
+	@Override
+	public void mouseClicked() {
+		List<SingleProxyMarker<Node>> hitNodeMarkers = nodeMarkerManager.getHitMarkers(mouseX, mouseY);
+		logger.debug("mouse clicked @ (%d,%d), nb. markers: %d", mouseX, mouseY, hitNodeMarkers.size());
+		
+		if (hitNodeMarkers.size() != 1)
+			return;
+		
+		final String name = hitNodeMarkers.get(0).getOriginal().getText();
+		
+		schedule(new Task("mouseClicked") {
+
+			@Override
+			public void execute() throws Throwable {
+				Listener[] listeners = AbstractLAKMap.this.listeners.getListeners(Listener.class);
+				
+				for (Listener listener : listeners) {
+					listener.organizationClicked(name);
+				}
+			}});
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package ui.chart;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
 import javax.swing.event.EventListenerList;
@@ -136,20 +137,31 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 		renderer.setSeriesPaint(conferenceIndex, color);
 	}
+	
+	public void scrollToVisible() {
+		scrollRectToVisible(new Rectangle(0, 0, getWidth(), getHeight()));
+	}
 
 	private transient CategoryItemEntity highlightedEntity;
 
 	@Override
 	public void chartMouseClicked(ChartMouseEvent event) {
-		ChartEntity entity = event.getEntity();
-		if (entity == null || !(entity instanceof CategoryItemEntity))
-			// ignore the event
-			return;
+		scrollToVisible();
 
 		BarMouseListener[] listeners = barEventListeners.getListeners(BarMouseListener.class);
 		if (listeners.length == 0)
-			// no one to nofity
+			// no one to notify
 			return;
+		
+		ChartEntity entity = event.getEntity();
+		if (entity == null || !(entity instanceof CategoryItemEntity)) {
+			// only notify of chart click
+			for (BarMouseListener listener : listeners) {
+				listener.mouseChartClick(event, fullTitle);
+			}
+			
+			return;
+		}
 
 		CategoryItemEntity barEntity = (CategoryItemEntity) entity;
 
@@ -159,6 +171,7 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 		BarMouseEvent barMouseEvent = new BarMouseEvent(this, title, year);
 		for (BarMouseListener listener : listeners) {
 			listener.mouseClick(barMouseEvent);
+			listener.mouseChartClick(event, fullTitle);
 		}
 	}
 
@@ -291,6 +304,11 @@ public abstract class AbstractBarChart extends ChartPanel implements ChartMouseL
 
 	@Override
 	public void mouseClick(BarMouseEvent event) {
+		// NOP
+	}
+
+	@Override
+	public void mouseChartClick(ChartMouseEvent event, String chartTitle) {
 		// NOP
 	}
 	

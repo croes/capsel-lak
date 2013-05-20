@@ -13,6 +13,8 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
 
+import org.jfree.chart.ChartMouseEvent;
+
 public class BarChartPanel extends JPanel implements BarMouseListener {
 
 	private static final long serialVersionUID = 1251298766687293859L;
@@ -148,6 +150,14 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 		}
 	}
 
+	@Override
+	public void mouseChartClick(ChartMouseEvent event, String chartTitle) {
+		for (BarMouseListener listener : eventListeners.getListeners(BarMouseListener.class)) {
+			if (listener != event.getSource())
+				listener.mouseChartClick(event, chartTitle);
+		}
+	}
+
 	public void highlightAll(String title, int year) {
 		for (AbstractBarChart chart : charts)
 			chart.setHighlight(title, year);
@@ -166,5 +176,14 @@ public class BarChartPanel extends JPanel implements BarMouseListener {
 	public void clearAllHighlight() {
 		for (AbstractBarChart chart : charts)
 			chart.clearHighlight();
+	}
+
+	public void scrollToChartOfOrganization(String organization) {
+		for (AbstractBarChart chart : charts) {
+			if (chart.getFullTitle().equals(organization)) {
+				chart.scrollToVisible();
+				return;
+			}
+		}
 	}
 }
